@@ -1,0 +1,276 @@
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { fetchKudaGoEventsForCity } from './kudago';
+import { db } from './db';
+import { validateMaxInitData } from './maxAuth';
+import { analyzeWithLocalSemanticEngine, analyzeWithCloudLLM, type FlugerAIRequest } from './flugerAI';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+app.use(cors());
+app.use(express.json());
+
+// Прокси картинок с KudaGo с кэшированием и CORS для Canvas
+app.get('/kg-media/*', async (req, res) => {
+  const subPath = (req.params as any)[0] || '';
+  const targetUrl = `https://media.kudago.com/${subPath}`;
+
+  try {
+    const upstream = await fetch(targetUrl);
+    if (!upstream.ok) {
+      return res.status(upstream.status).end();
+    }
+
+    const contentType = upstream.headers.get('content-type') || 'image/jpeg';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+
+    const buffer = await upstream.arrayBuffer();
+    res.send(Buffer.from(buffer));
+  } catch (err) {
+    res.status(502).end();
+  }
+});
+
+import { eventAggregator } from './providers/aggregator';
+import { calculateGeoDistanceKm } from './providers/types';
+
+// Собственное универсальное API получения мероприятий:
+// Поддерживает:
+// - Мульти-источники (федеральный KudaGo + локальные городские порталы Москвы, СПб, Казани + кастомные)
+// - Интеллектуальную дедупликацию (одно и то же мероприятие из разных источников не двоится)
+// - Поиск по геолокации (lat, lon, radiusKm)
+// - Фильтрацию по категории, поисковому запросу, диапазону дат
+app.get('/api/events', async (req, res) => {
+  try {
+    let city = (req.query.city as string) || '';
+    const latStr = req.query.lat as string;
+    const lonStr = req.query.lon as string;
+    const radiusStr = req.query.radiusKm as string;
+    const category = req.query.category as string;
+    const search = req.query.search as string;
+    const dateFilter = req.query.dateFilter as string; // 'today' | 'tomorrow' | 'weekend' | 'all'
+
+    const lat = latStr ? parseFloat(latStr) : undefined;
+    const lon = lonStr ? parseFloat(lonStr) : undefined;
+    const radiusKm = radiusStr ? parseFloat(radiusStr) : 25;
+
+    // Если город не передан, но переданы координаты (геолокация пользователя) — определяем ближайший город
+    if (!city && typeof lat === 'number' && typeof lon === 'number' && !isNaN(lat) && !isNaN(lon)) {
+      city = eventAggregator.findNearestCity(lat, lon);
+    }
+    if (!city) {
+      city = 'kzn';
+    }
+
+    // Получаем агрегированные и дедуплицированные мероприятия
+    let events = await eventAggregator.getEvents(city);
+
+    // 1. Фильтр по расстоянию (если передана точная геолокация и радиус)
+    if (typeof lat === 'number' && typeof lon === 'number' && !isNaN(lat) && !isNaN(lon)) {
+      events = events.filter((e) => {
+        const d = calculateGeoDistanceKm(lat, lon, e.lat, e.lon);
+        return d <= radiusKm;
+      });
+    }
+
+    // 2. Фильтр по категории
+    if (category && category !== 'all') {
+      events = events.filter((e) => e.category === category);
+    }
+
+    // 3. Фильтр по текстовому поиску (название, место, описание)
+    if (search && search.trim()) {
+      const q = search.toLowerCase().trim();
+      events = events.filter(
+        (e) =>
+          e.title.toLowerCase().includes(q) ||
+          e.place.toLowerCase().includes(q) ||
+          (e.description && e.description.toLowerCase().includes(q))
+      );
+    }
+
+    // 4. Фильтр по дате
+    if (dateFilter && dateFilter !== 'all') {
+      const now = new Date();
+      events = events.filter((e) => {
+        const d = new Date(e.date);
+        if (dateFilter === 'today') {
+          return d.getDate() === now.getDate() && d.getMonth() === now.getMonth();
+        }
+        if (dateFilter === 'tomorrow') {
+          const tmrw = new Date(now);
+          tmrw.setDate(tmrw.getDate() + 1);
+          return d.getDate() === tmrw.getDate() && d.getMonth() === tmrw.getMonth();
+        }
+        if (dateFilter === 'weekend') {
+          const day = d.getDay();
+          return day === 6 || day === 0;
+        }
+        return true;
+      });
+    }
+
+    res.json({
+      success: true,
+      city,
+      count: events.length,
+      filters: {
+        category: category || 'all',
+        search: search || null,
+        dateFilter: dateFilter || 'all',
+        geo: lat && lon ? { lat, lon, radiusKm } : null,
+      },
+      items: events,
+    });
+  } catch (err: any) {
+    console.error('API /api/events error:', err);
+    res.status(500).json({ success: false, error: err.message || 'Server error' });
+  }
+});
+
+// Интеллектуальный ИИ помощник "Флюгер" (RAG + LLM)
+app.post('/api/ai/fluger', async (req, res) => {
+  try {
+    const { city = 'kzn', profile, answers, events: clientEvents } = req.body as FlugerAIRequest;
+
+    // Если клиент не передал мероприятия, берем актуальные для города через агрегатор
+    let events = clientEvents;
+    if (!events || events.length === 0) {
+      events = await eventAggregator.getEvents(city);
+    }
+
+    const apiKey = process.env.OPENAI_API_KEY || process.env.AI_API_KEY;
+    if (apiKey) {
+      const cloudResult = await analyzeWithCloudLLM(events, profile || null, answers, apiKey);
+      if (cloudResult) {
+        return res.json(cloudResult);
+      }
+    }
+
+    // Локальный семантический RAG движок (быстрый, надежный, 100% стабильность)
+    const result = analyzeWithLocalSemanticEngine(events, profile || null, answers);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Fluger AI processing error' });
+  }
+});
+
+// Создание своего мероприятия
+app.post('/api/events', (req, res) => {
+  const {
+    title,
+    description,
+    category,
+    date,
+    place,
+    lon,
+    lat,
+    citySlug,
+    isPrivate,
+    requiresRegistration,
+    image,
+    images,
+    price,
+    authorId,
+    authorName,
+  } = req.body;
+
+  if (!title || !category || !date) {
+    return res.status(400).json({ error: 'Title, category and date are required' });
+  }
+
+  const newEvent = {
+    id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    title,
+    description: description || 'Пользовательское мероприятие',
+    category,
+    date,
+    place: place || 'Место встречи уточняется',
+    lon: lon || 49.1221,
+    lat: lat || 55.7887,
+    citySlug: citySlug || 'kzn',
+    image: image || 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&auto=format&fit=crop&q=80',
+    images: Array.isArray(images) && images.length > 0 ? images : undefined,
+    ageRestricted: false,
+    price: price || 'Бесплатно / Организаторский сбор',
+    isCustom: true,
+    isPrivate: Boolean(isPrivate),
+    requiresRegistration: Boolean(requiresRegistration),
+    registeredCount: 1,
+    authorId,
+    authorName: authorName || 'Пользователь MAX',
+    createdAt: new Date().toISOString(),
+  };
+
+  db.addCustomEvent(newEvent);
+  res.status(201).json(newEvent);
+});
+
+// Получение чата по мероприятию
+app.get('/api/chat/:eventId', (req, res) => {
+  const { eventId } = req.params;
+  const messages = db.getChatMessages(eventId);
+  res.json({ eventId, messages });
+});
+
+// Отправка сообщения в чат мероприятия
+app.post('/api/chat/:eventId', (req, res) => {
+  const { eventId } = req.params;
+  const { userId, userName, userAvatar, text } = req.body;
+
+  if (!text || !text.trim()) {
+    return res.status(400).json({ error: 'Message text cannot be empty' });
+  }
+
+  const message = {
+    id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    eventId,
+    userId: userId || 'anonymous',
+    userName: userName || 'Пользователь MAX',
+    userAvatar,
+    text: text.trim(),
+    createdAt: new Date().toISOString(),
+  };
+
+  db.addChatMessage(eventId, message);
+  res.status(201).json(message);
+});
+
+// Регистрация на мероприятие
+app.post('/api/events/:eventId/register', (req, res) => {
+  const { eventId } = req.params;
+  const regData = req.body;
+
+  const count = db.addRegistration(eventId, regData);
+  res.json({ success: true, registeredCount: count });
+});
+
+// Валидация MAX initData
+app.post('/api/auth/validate', (req, res) => {
+  const { initData } = req.body;
+  const result = validateMaxInitData(initData);
+  res.json(result);
+});
+
+// Статика в продакшене (dist)
+const distPath = path.join(__dirname, '..', 'dist');
+app.use(express.static(distPath));
+
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/kg-media')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  res.sendFile(path.join(distPath, 'index.html'));
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

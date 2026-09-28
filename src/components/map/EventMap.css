@@ -1,0 +1,397 @@
+.event-map-container {
+  position: relative;
+  width: 100vw;
+  height: calc(100vh - 60px - var(--safe-bottom, 0px));
+  height: calc(100dvh - 60px - var(--safe-bottom, 0px));
+  overflow: hidden;
+  background-color: var(--max-bg, #f5f6f8);
+}
+
+.event-map-gl {
+  width: 100%;
+  height: 100%;
+}
+
+/* ========================================================
+   СКРЫТИЕ ТЕХНИЧЕСКИХ ЭЛЕМЕНТОВ КАРТЫ (OpenStreetMap, MapLibre, логотипы)
+   ======================================================== */
+.maplibregl-ctrl-attrib,
+.mapboxgl-ctrl-attrib,
+.maplibregl-ctrl-attrib-inner,
+.mapboxgl-ctrl-attrib-inner,
+.maplibregl-compact,
+.mapboxgl-compact,
+.maplibregl-ctrl-logo,
+.mapboxgl-ctrl-logo,
+.maplibregl-ctrl-attrib-button,
+.mapboxgl-ctrl-attrib-button {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Стильные навигационные кнопки MapLibre */
+.maplibregl-ctrl-group,
+.mapboxgl-ctrl-group {
+  border-radius: 14px !important;
+  background: var(--max-card-bg, #ffffff) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+  border: 1px solid var(--max-border, rgba(0, 0, 0, 0.08)) !important;
+  overflow: hidden;
+  margin-right: 16px !important;
+  margin-bottom: 74px !important;
+}
+
+.maplibregl-ctrl-group button,
+.mapboxgl-ctrl-group button {
+  width: 38px !important;
+  height: 38px !important;
+  border: none !important;
+}
+
+/* ========================================================
+   3. КНОПКА ЦЕНТРОВКИ НА ПОЛЬЗОВАТЕЛЯ
+   ======================================================== */
+.map-recenter-btn {
+  position: absolute;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  right: 16px;
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--max-card-bg, #ffffff);
+  border: 1px solid var(--max-border, rgba(0, 0, 0, 0.08));
+  color: var(--max-primary, #6c5ce7);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.18s ease, background-color 0.18s ease;
+}
+
+.map-recenter-btn:active {
+  transform: scale(0.92);
+}
+
+.map-recenter-btn.locating {
+  animation: pulseRecenter 1s ease-in-out infinite;
+}
+
+@keyframes pulseRecenter {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 8px 24px rgba(108, 92, 231, 0.35);
+  }
+}
+
+/* ========================================================
+   4. BOTTOM SHEET КАРТОЧКА МЕРОПРИЯТИЯ
+   ======================================================== */
+.map-bottom-card {
+  position: absolute;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  left: 16px;
+  right: 72px; /* оставляет место для кнопки центровки */
+  max-width: 440px;
+  z-index: 20;
+  background: var(--max-card-bg, #ffffff);
+  border-radius: var(--max-radius, 18px);
+  border: 1px solid var(--max-border, rgba(0, 0, 0, 0.08));
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  cursor: pointer;
+  animation: slideUpCard 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.map-card-multi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 7px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--max-border, rgba(0, 0, 0, 0.07));
+  width: 100%;
+}
+
+.multi-header-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--max-primary, #6c5ce7);
+  letter-spacing: -0.1px;
+}
+
+.multi-header-switcher {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.multi-switch-btn {
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  background: var(--max-hover, rgba(0, 0, 0, 0.04));
+  border: 1px solid var(--max-border, rgba(0, 0, 0, 0.08));
+  color: var(--max-text-secondary, #7d7d7d);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.multi-switch-btn.active {
+  background: var(--max-primary, #6c5ce7);
+  color: #ffffff;
+  border-color: var(--max-primary, #6c5ce7);
+  box-shadow: 0 2px 6px rgba(108, 92, 231, 0.35);
+}
+
+.map-card-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+@keyframes slideUpCard {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.map-card-close {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--max-card-bg, #ffffff);
+  border: 1px solid var(--max-border, rgba(0, 0, 0, 0.12));
+  color: var(--max-text-secondary, #7d7d7d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+}
+
+.map-card-thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--max-radius-sm, 12px);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.map-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.map-card-source {
+  font-size: 10px;
+  color: var(--max-primary, #6c5ce7);
+  font-weight: 700;
+  display: block;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.map-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 4px;
+  color: var(--max-text, #1e1e1e);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.map-card-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--max-text-secondary, #7d7d7d);
+  margin-top: 2px;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-card-arrow {
+  color: var(--max-primary, #6c5ce7);
+  padding-right: 4px;
+}
+
+/* ========================================================
+   5. МЕТКИ СО СЧЁТЧИКОМ: КРУГОВОЙ ГРАДИЕНТ В ЦВЕТА МЕРОПРИЯТИЙ
+   ======================================================== */
+.event-cluster-bubble {
+  width: 0;
+  height: 0;
+  pointer-events: auto;
+  user-select: none;
+}
+
+.cluster-bubble-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none; /* Обводка метки полностью окрашена в круговой градиент, без белого цвета */
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease;
+}
+
+/* Эффект мягкого свечения по границам метки (halo glow), в точности как у одиночных меток (opacity 0.35, blur) */
+.cluster-bubble-inner::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: inherit;
+  filter: blur(6px);
+  opacity: 0.35;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Градация размеров (увеличена на 25% пропорционально остальным меткам):
+   size-xs: 42px
+   size-sm: 46px
+   size-md: 50px
+   size-lg: 54px
+*/
+.cluster-bubble-inner.size-xs {
+  width: 42px;
+  height: 42px;
+}
+
+.cluster-bubble-inner.size-sm {
+  width: 46px;
+  height: 46px;
+}
+
+.cluster-bubble-inner.size-md {
+  width: 50px;
+  height: 50px;
+}
+
+.cluster-bubble-inner.size-lg {
+  width: 54px;
+  height: 54px;
+}
+
+/* При наведении — только легкий аккуратный scale внутреннего элемента, БЕЗ смещения метки */
+.cluster-bubble-inner:hover,
+.cluster-bubble-inner:active {
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Цифра количества мероприятий (белая, контрастная, прямо поверх градиента) */
+.cluster-count-text {
+  position: relative;
+  z-index: 1;
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
+.cluster-bubble-inner.size-xs .cluster-count-text {
+  font-size: 14px;
+}
+
+.cluster-bubble-inner.size-sm .cluster-count-text {
+  font-size: 15px;
+}
+
+.cluster-bubble-inner.size-md .cluster-count-text {
+  font-size: 16px;
+}
+
+.cluster-bubble-inner.size-lg .cluster-count-text {
+  font-size: 17px;
+}
+
+/* ========================================================
+   6. ПЛАШКИ НАЗВАНИЙ ГОРОДОВ ПРИ ОТДАЛЕНИИ КАРТЫ
+   ======================================================== */
+.city-boundary-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 18px;
+  background: var(--max-card-bg, #ffffff);
+  border: 1.5px solid var(--max-primary, #6c5ce7);
+  border-radius: 999px;
+  box-shadow: 0 4px 18px rgba(108, 92, 231, 0.2), 0 2px 8px rgba(0, 0, 0, 0.08);
+  color: var(--max-text, #1e1e1e);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  pointer-events: auto;
+  z-index: 5;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.2s ease, 
+              background 0.2s ease, 
+              border-color 0.2s ease;
+}
+
+.city-boundary-badge:hover {
+  box-shadow: 0 8px 26px rgba(108, 92, 231, 0.35);
+}
+
+.city-boundary-badge:active {
+  transform: scale(0.95);
+}
+
+.city-boundary-badge.hidden-current-city,
+.city-boundary-badge.hidden-zoom {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}

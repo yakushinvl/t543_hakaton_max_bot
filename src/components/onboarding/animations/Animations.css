@@ -1,0 +1,610 @@
+/* ========================================================
+   CLEAN MINIMALIST ANIMATIONS FOR ONBOARDING
+   (Вылезают снизу экрана + плавное/еле движимое состояние)
+   ======================================================== */
+
+.clean-large-style {
+  width: 100%;
+  max-width: 400px;
+  height: 270px;
+  margin: auto auto 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  /* Плавный замедленный выезд снизу экрана */
+  animation: animRiseFromBottom 0.95s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes animRiseFromBottom {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 140px, 0) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* ========================================================
+   1. PARTY ANIMATION (ТУСОВКА - МИНИМАЛИЗМ)
+   ======================================================== */
+.party-minimal-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Еле движимая плавная анимация после выезда */
+  animation: idleSubtleFloat 7s ease-in-out 0.65s infinite alternate;
+}
+
+.party-wave-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--max-border);
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.wave-outer { width: 250px; height: 250px; animation: idleSlowPulse 6s ease-in-out infinite alternate; }
+.wave-mid { width: 190px; height: 190px; animation: idleSlowPulse 6s ease-in-out 1s infinite alternate; }
+.wave-inner { width: 130px; height: 130px; animation: idleSlowPulse 6s ease-in-out 2s infinite alternate; }
+
+@keyframes idleSlowPulse {
+  0% { transform: scale(0.97); opacity: 0.3; }
+  100% { transform: scale(1.03); opacity: 0.6; }
+}
+
+.party-disc-minimal {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: var(--max-card-bg);
+  border: 2px solid var(--max-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Еле заметное медленное вращение пластинки */
+  animation: idleSlowSpin 24s linear infinite;
+}
+
+.disc-groove {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--max-border);
+}
+
+.groove-1 { width: 86px; height: 86px; opacity: 0.6; }
+.groove-2 { width: 62px; height: 62px; opacity: 0.6; }
+
+.disc-core {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--max-bg);
+  border: 1.5px solid var(--max-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.disc-core-icon {
+  font-size: 20px;
+}
+
+@keyframes idleSlowSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.party-minimal-bars {
+  position: absolute;
+  bottom: 14px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  height: 40px;
+}
+
+.m-bar {
+  width: 6px;
+  background: var(--max-primary);
+  border-radius: 3px;
+  opacity: 0.85;
+  transform-origin: bottom;
+  /* Плавный, спокойный ритм */
+  animation: idleBarBounce 2.4s ease-in-out infinite alternate;
+}
+
+.m-bar-1 { height: 16px; animation-delay: 0.2s; }
+.m-bar-2 { height: 28px; animation-delay: 0.5s; }
+.m-bar-3 { height: 38px; animation-delay: 0.1s; }
+.m-bar-4 { height: 22px; animation-delay: 0.7s; }
+.m-bar-5 { height: 34px; animation-delay: 0.3s; }
+.m-bar-6 { height: 24px; animation-delay: 0.6s; }
+.m-bar-7 { height: 14px; animation-delay: 0.4s; }
+
+@keyframes idleBarBounce {
+  0% { transform: scaleY(0.4); opacity: 0.4; }
+  100% { transform: scaleY(1); opacity: 0.9; }
+}
+
+.party-float-accent {
+  position: absolute;
+  font-size: 22px;
+  pointer-events: none;
+  animation: idleSubtleFloat 5s ease-in-out infinite alternate;
+}
+
+.accent-left { top: 35px; left: 18%; }
+.accent-right { top: 45px; right: 18%; animation-delay: 1.5s; }
+
+/* ========================================================
+   2. MAP ANIMATION (КАРТА - МИНИМАЛИЗМ)
+   ======================================================== */
+.map-minimal-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  border: 1px solid var(--max-border);
+  background: var(--max-card-bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: idleSubtleFloat 8s ease-in-out 0.65s infinite alternate;
+}
+
+.map-geo-line {
+  position: absolute;
+  background: var(--max-border);
+  opacity: 0.5;
+}
+
+.road-h-top { top: 60px; left: 0; right: 0; height: 4px; }
+.road-h-bottom { bottom: 65px; left: 0; right: 0; height: 3px; }
+.road-v-center { left: 50%; top: 0; bottom: 0; width: 4px; transform: translateX(-50%); }
+
+.map-river-curve {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 28%;
+  width: 24px;
+  background: var(--max-primary-light);
+  transform: skewX(-18deg);
+  border-radius: 12px;
+}
+
+.map-subtle-radar {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 1px solid var(--max-primary);
+  opacity: 0.25;
+  animation: idleRadarPulse 4s ease-out infinite;
+}
+
+@keyframes idleRadarPulse {
+  0% { transform: scale(0.6); opacity: 0.5; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.map-clean-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.clean-route-path {
+  opacity: 0.6;
+}
+
+.clean-pin {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(-50%, -50%);
+  animation: idleSubtleFloat 4s ease-in-out infinite alternate;
+}
+
+.clean-pin-1 { top: 65%; left: 22%; animation-delay: 0.2s; }
+.clean-pin-2 { top: 38%; left: 52%; animation-delay: 0.8s; }
+.clean-pin-3 { top: 68%; right: 18%; animation-delay: 1.4s; }
+
+.pin-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--max-card-bg);
+  border: 1.5px solid var(--max-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+}
+
+.pin-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--max-text);
+  margin-top: 4px;
+  background: var(--max-card-bg);
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--max-border);
+}
+
+/* ========================================================
+   3. FLUGER AI ANIMATION (ФЛЮГЕР - МИНИМАЛИЗМ)
+   ======================================================== */
+.fluger-minimal-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: idleSubtleFloat 8s ease-in-out 0.65s infinite alternate;
+}
+
+.clean-wind-curves {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.clean-wind-path {
+  animation: windDashCycle 4s linear infinite;
+}
+
+.wind-path-1 { opacity: 0.4; animation-duration: 3.5s; }
+.wind-path-2 { opacity: 0.25; animation-duration: 5s; }
+
+@keyframes windDashCycle {
+  to { stroke-dashoffset: -32; }
+}
+
+.clean-weathervane {
+  position: relative;
+  width: 150px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clean-mast {
+  position: absolute;
+  width: 3px;
+  height: 130px;
+  background: var(--max-border);
+  bottom: 0;
+  border-radius: 2px;
+}
+
+.clean-compass-cross {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clean-cross-h {
+  position: absolute;
+  width: 76px;
+  height: 1.5px;
+  background: var(--max-border);
+}
+
+.clean-cross-v {
+  position: absolute;
+  height: 76px;
+  width: 1.5px;
+  background: var(--max-border);
+}
+
+.clean-dir {
+  position: absolute;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--max-text-secondary);
+}
+
+.c-dir-n { top: -2px; left: 50%; transform: translateX(-50%); color: var(--max-primary); }
+.c-dir-e { right: -2px; top: 50%; transform: translateY(-50%); }
+.c-dir-s { bottom: -2px; left: 50%; transform: translateX(-50%); }
+.c-dir-w { left: -2px; top: 50%; transform: translateY(-50%); }
+
+.clean-vane-spinner {
+  position: absolute;
+  top: 20px;
+  width: 130px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Еле движимое покачивание флюгера от тихого бриза */
+  animation: idleVaneBreeze 6s ease-in-out infinite alternate;
+  transform-origin: center center;
+  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.clean-vane-spinner.is-spinning {
+  animation: fastVaneSpin 0.6s linear infinite !important;
+}
+
+@keyframes fastVaneSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.clean-wind-curves.fast-wind .clean-wind-path {
+  animation-duration: 1.2s !important;
+  opacity: 0.75 !important;
+}
+
+@keyframes idleVaneBreeze {
+  0% { transform: rotate(-8deg); }
+  40% { transform: rotate(14deg); }
+  75% { transform: rotate(2deg); }
+  100% { transform: rotate(-5deg); }
+}
+
+.clean-arrow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.clean-arrow-spear {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--max-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 119, 255, 0.25);
+}
+
+.clean-arrow-shaft {
+  flex: 1;
+  height: 2.5px;
+  background: var(--max-text);
+  margin: 0 4px;
+  border-radius: 2px;
+}
+
+.clean-arrow-fin {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--max-card-bg);
+  border: 1.5px solid var(--max-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.clean-ai-badge {
+  position: absolute;
+  bottom: 0;
+  padding: 6px 14px;
+  background: var(--max-card-bg);
+  border: 1px solid var(--max-border);
+  border-radius: 18px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--max-text-secondary);
+}
+
+/* ========================================================
+   4. CREATE EVENT ANIMATION (СОЗДАНИЕ - МИНИМАЛИЗМ)
+   ======================================================== */
+.create-minimal-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: idleSubtleFloat 7s ease-in-out 0.65s infinite alternate;
+}
+
+.clean-event-sheet {
+  width: 100%;
+  max-width: 320px;
+  background: var(--max-card-bg);
+  border: 1px solid var(--max-border);
+  border-radius: 20px;
+  padding: 18px 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+.clean-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.clean-date-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--max-primary);
+  background: var(--max-primary-light);
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.clean-type-label {
+  font-size: 11.5px;
+  color: var(--max-text-secondary);
+  font-weight: 500;
+}
+
+.clean-event-name {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--max-text);
+  margin-bottom: 4px;
+}
+
+.clean-event-location {
+  font-size: 12.5px;
+  color: var(--max-text-secondary);
+  margin-bottom: 16px;
+}
+
+.clean-avatars-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--max-border);
+}
+
+.clean-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--max-bg);
+  border: 1.5px solid var(--max-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.a-host {
+  border-color: var(--max-primary);
+  background: var(--max-primary-light);
+}
+
+.a-add {
+  border-style: dashed;
+  color: var(--max-text-secondary);
+  font-weight: 700;
+}
+
+.clean-invite-pill {
+  margin-top: 12px;
+  padding: 6px 14px;
+  background: var(--max-card-bg);
+  border: 1px solid var(--max-border);
+  border-radius: 16px;
+  font-size: 11.5px;
+  color: var(--max-text-secondary);
+  font-weight: 500;
+}
+
+/* ========================================================
+   5. HURRICANE ANIMATION (УРАГАН - МИНИМАЛИЗМ)
+   ======================================================== */
+.hurricane-minimal-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: idleSubtleFloat 8s ease-in-out 0.65s infinite alternate;
+}
+
+.clean-vortex-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px dashed var(--max-border);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.ring-l1 { width: 110px; height: 110px; animation: idleSlowSpin 14s linear infinite; }
+.ring-l2 { width: 180px; height: 180px; animation: idleSlowSpin 20s linear infinite reverse; }
+.ring-l3 { width: 250px; height: 250px; animation: idleSlowSpin 28s linear infinite; }
+
+.clean-vortex-center {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--max-card-bg);
+  border: 1px solid var(--max-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.vortex-center-emoji {
+  font-size: 26px;
+  /* Еле движимое вращение */
+  animation: idleSlowSpin 8s linear infinite;
+}
+
+.clean-orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.orbit-a { width: 170px; height: 170px; animation: idleSlowSpin 18s linear infinite; }
+.orbit-b { width: 230px; height: 150px; animation: idleSlowSpin 24s linear infinite reverse; }
+.orbit-c { width: 150px; height: 230px; animation: idleSlowSpin 22s linear infinite; }
+.orbit-d { width: 260px; height: 200px; animation: idleSlowSpin 26s linear infinite reverse; }
+
+.clean-chip {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 12px;
+  background: var(--max-card-bg);
+  border: 1px solid var(--max-border);
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--max-text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  white-space: nowrap;
+}
+
+.chip-a { animation: idleSlowSpin 18s linear infinite reverse; }
+.chip-b { animation: idleSlowSpin 24s linear infinite; }
+.chip-c { animation: idleSlowSpin 22s linear infinite reverse; }
+.chip-d { animation: idleSlowSpin 26s linear infinite; }
+
+/* ========================================================
+   ОБЩИЕ АНИМАЦИИ ЕЛЕ ДВИЖИМОГО СОСТОЯНИЯ (IDLE)
+   ======================================================== */
+@keyframes idleSubtleFloat {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+  100% { transform: translateY(2px); }
+}

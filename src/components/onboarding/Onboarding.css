@@ -1,0 +1,632 @@
+/* ========================================================
+   FULLSCREEN BORDERLESS ONBOARDING
+   (Чат-стиль, выравнивание по левому краю, без подложек)
+   ======================================================== */
+
+.onboarding-root-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background-color: var(--max-bg);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: calc(20px + var(--safe-top)) 24px calc(18px + var(--safe-bottom));
+  box-sizing: border-box;
+  user-select: none;
+  touch-action: pan-y;
+}
+
+.onboarding-root-fullscreen.root-step-interests {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.onboarding-root-fullscreen.root-step-interests .onboarding-bottom-actions-bar {
+  padding-left: 24px;
+  padding-right: 24px;
+  box-sizing: border-box;
+}
+
+/* Обертка этапа */
+.onboarding-stage-wrapper {
+  position: relative;
+  z-index: 5;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  overflow: hidden;
+  height: 100%;
+}
+
+/* ========================================================
+   ПЛАВНЫЙ ПЕРЕХОД МЕЖДУ ЭТАПАМИ (0.65s)
+   ======================================================== */
+.stage-fade-enter-right {
+  animation: enterStageRight 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.stage-fade-enter-left {
+  animation: enterStageLeft 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.stage-fade-leave-left {
+  animation: leaveStageLeft 0.32s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+.stage-fade-leave-right {
+  animation: leaveStageRight 0.32s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+@keyframes enterStageRight {
+  from {
+    opacity: 0;
+    transform: translate3d(28px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes enterStageLeft {
+  from {
+    opacity: 0;
+    transform: translate3d(-28px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes leaveStageLeft {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to { opacity: 0; transform: translate3d(-18px, 0, 0); }
+}
+
+@keyframes leaveStageRight {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to { opacity: 0; transform: translate3d(18px, 0, 0); }
+}
+
+/* ========================================================
+   ЗАМЕДЛЕННАЯ ПОСТРОЧНАЯ АНИМАЦИЯ ПОЯВЛЕНИЯ (1.15s)
+   ======================================================== */
+.anim-line {
+  opacity: 0;
+  display: inline-block;
+  animation: lineFadeIn 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.anim-delay-1 { animation-delay: 0.15s; }
+.anim-delay-2 { animation-delay: 0.75s; }
+.anim-delay-3 { animation-delay: 1.35s; }
+.anim-delay-4 { animation-delay: 1.85s; }
+
+@keyframes lineFadeIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* ========================================================
+   СТРОКИ ЧАТА (ВИД ЧАТА, ВЫРАВНИВАНИЕ ПО ЛЕВОМУ КРАЮ)
+   ======================================================== */
+.stage-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.stage-layout-bottom-anim {
+  justify-content: space-between;
+  align-items: stretch;
+}
+
+.stage-layout-top-form {
+  justify-content: flex-start;
+  align-items: stretch;
+}
+
+.stage-centered-layout {
+  justify-content: space-between;
+  align-items: stretch;
+}
+
+.stage-interests-layout {
+  justify-content: flex-start;
+  align-items: stretch;
+  height: 100%;
+  width: 100%;
+}
+
+.stage-wrapper-interests {
+  max-width: 100% !important;
+  width: 100% !important;
+  overflow: visible !important;
+}
+
+.stage-interests-header-box {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 14px 24px 0;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 30;
+}
+
+.stage-interests-grid-wrap {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 440px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.stage-text-block,
+.stage-top-block {
+  width: 100%;
+  text-align: left;
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Единый адаптированный размер шрифта для всех заголовков онбординга:
+   крупный, круглый шрифт ('Nunito'), менее жирный (font-weight: 600) с автоматическим переносом */
+.stage-chat-line,
+.stage-main-title,
+.welcome-title {
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: clamp(27px, 7.2vw, 34px);
+  font-weight: 700;
+  color: var(--max-text);
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+  margin-bottom: 8px;
+  text-align: left;
+  word-break: normal;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+/* Нижняя зона: визуализация у самого низа экрана */
+.stage-bottom-visual {
+  width: 100%;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 8px;
+}
+
+/* ========================================================
+   ЭТАП 5: ПОЛЕ С ИМЕНЕМ СВЕРХУ С ЗАКРУГЛЕННОЙ РАМКОЙ
+   ======================================================== */
+.name-input-frame-wrap {
+  width: 100%;
+  margin-top: 24px;
+}
+
+.name-input-frame {
+  position: relative;
+  width: 100%;
+  background: var(--max-card-bg);
+  border: 1.5px solid var(--max-border);
+  border-radius: 16px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+}
+
+.name-input-frame:focus-within {
+  border-color: var(--max-primary);
+  box-shadow: 0 0 0 3px var(--max-primary-light);
+}
+
+.framed-name-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--max-text);
+  outline: none;
+  padding-right: 50px;
+}
+
+.name-char-counter {
+  position: absolute;
+  right: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--max-text-secondary);
+}
+
+/* ========================================================
+   ЭТАП 6: ВОЗРАСТ СВЕРХУ В ВИДЕ ЗАКРУГЛЕННЫХ РАМОК БЕЗ "ЛЕТ"
+   ======================================================== */
+.age-framed-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  margin-top: 22px;
+}
+
+.age-framed-button {
+  padding: 14px 22px;
+  background: var(--max-card-bg);
+  border: 1.5px solid var(--max-border);
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
+  user-select: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.age-framed-button:active {
+  transform: scale(0.95);
+}
+
+.age-framed-button.selected {
+  border-color: var(--max-primary);
+  background: var(--max-primary-light);
+}
+
+.age-framed-val {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--max-text);
+  line-height: 1.1;
+}
+
+.age-framed-button.selected .age-framed-val {
+  color: var(--max-primary);
+}
+
+.age-framed-check {
+  margin-left: 8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--max-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ========================================================
+   ЭТАП 7: КРУЖКИ С ПОЛАМИ ПО ЦЕНТРУ
+   ======================================================== */
+.gender-center-stage {
+  margin: auto 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.seamless-gender-circles {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.gender-circle-btn {
+  width: 114px;
+  height: 114px;
+  border-radius: 50%;
+  background: var(--max-card-bg);
+  border: 1.5px solid var(--max-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
+  user-select: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.gender-circle-btn:active {
+  transform: scale(0.94);
+}
+
+.gender-circle-btn.selected {
+  border-color: var(--max-primary);
+  background: var(--max-primary-light);
+}
+
+.gender-circle-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.gender-circle-icon {
+  font-size: 44px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.gender-circle-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--max-text);
+}
+
+.gender-circle-btn.selected .gender-circle-label {
+  color: var(--max-primary);
+}
+
+.gender-circle-check {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--max-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--max-card-bg);
+}
+
+/* ========================================================
+   ЭТАП 9: "УРА, ТЕПЕРЬ МЫ ЗНАКОМЫ!"
+   ======================================================== */
+.welcome-screen-content {
+  justify-content: space-between;
+}
+
+.welcome-avatar-ring {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: var(--max-card-bg);
+  border: 2px solid var(--max-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 0 0 14px 0;
+}
+
+.welcome-avatar-icon {
+  font-size: 42px;
+}
+
+.welcome-sparkle-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #10b981;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  border: 2px solid var(--max-card-bg);
+}
+
+.welcome-title {
+  color: var(--max-text);
+  text-align: left;
+}
+
+.welcome-summary-card {
+  width: 100%;
+  max-width: 320px;
+  background: var(--max-card-bg);
+  border: 1px solid var(--max-border);
+  border-radius: 16px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 14px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.summary-label {
+  font-size: 11px;
+  color: var(--max-text-secondary);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.summary-val {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--max-text);
+}
+
+.welcome-countdown-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: var(--max-card-bg);
+  border: 1px solid var(--max-border);
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+
+.countdown-ring-track {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--max-primary);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.countdown-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--max-text-secondary);
+}
+
+/* ========================================================
+   ЕДИНАЯ НИЖНЯЯ ПАНЕЛЬ ДЕЙСТВИЙ (ВСЕ КНОПКИ ВНИЗУ ЭКРАНА)
+   ======================================================== */
+.onboarding-bottom-actions-bar {
+  position: relative;
+  z-index: 20;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 52px;
+  padding-top: 8px;
+}
+
+.action-slot {
+  display: flex;
+  align-items: center;
+}
+
+.slot-left {
+  width: 52px;
+  justify-content: flex-start;
+}
+
+.slot-center {
+  flex: 1;
+  justify-content: center;
+  padding: 0 10px;
+}
+
+.slot-right {
+  width: 52px;
+  justify-content: flex-end;
+}
+
+/* Основные кнопки внизу экрана (Продолжить, Завершить) */
+.onboarding-bottom-main-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 260px;
+  padding: 13px 20px;
+  background: var(--max-primary);
+  color: #ffffff;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.onboarding-bottom-main-btn:active {
+  transform: scale(0.97);
+}
+
+.onboarding-bottom-main-btn.finish-btn {
+  background: #10b981;
+}
+
+.onboarding-bottom-fast-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--max-text-secondary);
+  padding: 6px 14px;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.onboarding-bottom-fast-btn:hover {
+  color: var(--max-primary);
+}
+
+/* Еле заметные стрелочки навигации в углах */
+.onboarding-corner-arrow-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--max-border);
+  color: var(--max-text-secondary);
+  opacity: 0.65;
+  transition: all 0.2s ease;
+}
+
+.onboarding-corner-arrow-btn:hover {
+  opacity: 1;
+  background: var(--max-card-bg);
+  color: var(--max-text);
+  transform: scale(1.05);
+}
+
+.onboarding-corner-arrow-btn:active {
+  transform: scale(0.92);
+}
+
+.corner-next:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-height: 640px) {
+  .onboarding-root-fullscreen {
+    padding: calc(12px + var(--safe-top)) 16px calc(12px + var(--safe-bottom));
+  }
+
+  .stage-chat-line,
+  .stage-main-title,
+  .welcome-title {
+    font-size: clamp(24px, 6.8vw, 30px);
+    margin-bottom: 5px;
+  }
+}

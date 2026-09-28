@@ -1,0 +1,1391 @@
+/* ==========================================================================
+   СОЦИАЛКА: Лёгкий современный стиль БЕЗ тяжёлых подложек (Clean & Airy)
+   ========================================================================== */
+
+.social-screen-clean {
+  padding: 16px 16px calc(80px + var(--safe-bottom, 0px));
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* Шапка раздела */
+.social-clean-header {
+  margin-bottom: 16px;
+}
+
+.social-clean-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.social-clean-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--max-text);
+  line-height: 1.2;
+}
+
+.social-clean-subtitle {
+  font-size: 13px;
+  color: var(--max-text-secondary);
+  margin-top: 2px;
+}
+
+/* Кнопка "Создать встречу" в шапке */
+.btn-create-clean {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--max-primary);
+  color: #ffffff;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+
+.btn-create-clean:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+/* Лёгкий Segmented Control без тяжёлых границ и двойных коробок */
+.clean-segmented-tabs {
+  display: flex;
+  background: rgba(120, 120, 128, 0.08);
+  padding: 3px;
+  border-radius: 12px;
+  gap: 4px;
+}
+
+.segmented-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 9px;
+  color: var(--max-text-secondary);
+  transition: all 0.18s ease;
+}
+
+.segmented-tab.active {
+  background: var(--max-card-bg);
+  color: var(--max-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tab-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--max-primary);
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+/* Фильтры чатов (Хочу пойти / Посещено) */
+.chat-filter-chips {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.chat-filter-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: transparent;
+  color: var(--max-text-secondary);
+  border: 1px solid var(--max-border);
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.filter-chip.active {
+  background: var(--max-primary-light);
+  border-color: var(--max-primary);
+  color: var(--max-primary);
+}
+
+/* ==========================================================================
+   СПИСОК ЧАТОВ: Лёгкие строки БЕЗ тяжёлых карточек-подложек
+   ========================================================================== */
+
+.chats-clean-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-clean-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 4px;
+  border-bottom: 1px solid var(--max-border);
+  cursor: pointer;
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.chat-clean-row:active {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.chat-avatar-wrap {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+}
+
+.chat-thumb-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+.chat-active-dot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #34c759;
+  border: 2px solid var(--max-bg);
+}
+
+.chat-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chat-row-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.chat-row-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--max-text);
+  line-height: 1.3;
+}
+
+.chat-row-time {
+  font-size: 11.5px;
+  color: var(--max-text-secondary);
+  flex-shrink: 0;
+}
+
+.chat-row-status-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.clean-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.clean-badge.want {
+  background: var(--max-primary-light);
+  color: var(--max-primary);
+}
+
+.clean-badge.attended {
+  background: rgba(52, 199, 89, 0.12);
+  color: #34c759;
+}
+
+.clean-badge.author {
+  background: rgba(108, 92, 231, 0.12);
+  color: #6c5ce7;
+}
+
+.clean-badge.public {
+  background: rgba(0, 119, 255, 0.08);
+  color: var(--max-primary);
+}
+
+.clean-badge.private {
+  background: rgba(255, 149, 0, 0.12);
+  color: #ff9500;
+}
+
+.chat-meta-inline {
+  font-size: 11.5px;
+  color: var(--max-text-secondary);
+}
+
+.chat-row-preview {
+  font-size: 13px;
+  color: var(--max-text-secondary);
+  line-height: 1.35;
+  margin-top: 1px;
+}
+
+.preview-sender {
+  color: var(--max-text);
+  font-weight: 500;
+}
+
+.chat-chevron {
+  color: var(--max-text-secondary);
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+
+/* Пустое состояние чатов */
+.chats-empty-state {
+  padding: 30px 10px;
+  text-align: center;
+}
+
+.empty-icon-circle {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: var(--max-primary-light);
+  color: var(--max-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-icon-circle.purple {
+  background: rgba(108, 92, 231, 0.12);
+  color: #6c5ce7;
+}
+
+.empty-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--max-text);
+}
+
+.empty-desc {
+  font-size: 13.5px;
+  color: var(--max-text-secondary);
+  line-height: 1.45;
+  max-width: 380px;
+  margin: 0 auto 24px;
+}
+
+/* Рекомендации событий для обсуждения */
+.suggested-chats-block {
+  text-align: left;
+  border-top: 1px solid var(--max-border);
+  padding-top: 20px;
+  margin-top: 10px;
+}
+
+.suggested-heading {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--max-text);
+  margin-bottom: 12px;
+}
+
+.suggested-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.suggested-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--max-border);
+}
+
+.suggested-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.suggested-info {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.suggested-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--max-text);
+}
+
+.suggested-meta {
+  font-size: 12px;
+  color: var(--max-text-secondary);
+  margin-top: 2px;
+}
+
+.btn-join-want {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--max-primary-light);
+  color: var(--max-primary);
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   ПОЛНОЭКРАННЫЙ ЧАТ (с отображением нижней панели навигации)
+   ========================================================================== */
+
+.event-chat-fullscreen {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 65px - var(--safe-bottom, 0px));
+  height: calc(100dvh - 65px - var(--safe-bottom, 0px));
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  background: var(--max-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.chat-topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--max-border);
+  background: var(--max-bg);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.btn-chat-back {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--max-primary);
+  font-weight: 600;
+  font-size: 15px;
+  padding: 6px 4px;
+}
+
+.btn-chat-back-text {
+  font-size: 14px;
+}
+
+.chat-topbar-center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.chat-event-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.chat-event-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--max-text);
+}
+
+.chat-status-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--max-text-secondary);
+  margin-top: 1px;
+}
+
+.online-indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #34c759;
+}
+
+.btn-chat-info {
+  color: var(--max-text-secondary);
+  padding: 6px;
+}
+
+/* Тонкая контекстная строка */
+.chat-event-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  font-size: 11.5px;
+  color: var(--max-text-secondary);
+  border-bottom: 1px solid var(--max-border);
+  background: rgba(0, 0, 0, 0.015);
+  flex-shrink: 0;
+}
+
+.strip-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.strip-divider {
+  opacity: 0.4;
+}
+
+.strip-price {
+  font-weight: 600;
+  color: var(--max-primary);
+}
+
+/* Лента сообщений */
+.chat-feed {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chat-intro-notice {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px dashed var(--max-border);
+  margin-bottom: 8px;
+}
+
+.chat-intro-icon {
+  color: var(--max-primary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.chat-intro-text strong {
+  display: block;
+  font-size: 13px;
+  color: var(--max-text);
+  margin-bottom: 2px;
+}
+
+.chat-intro-text p {
+  font-size: 12px;
+  color: var(--max-text-secondary);
+  line-height: 1.35;
+}
+
+.chat-bubble-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.chat-bubble-row.row-me {
+  justify-content: flex-end;
+}
+
+.chat-bubble-row.row-other {
+  justify-content: flex-start;
+}
+
+.bubble-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--max-primary-light);
+  color: var(--max-primary);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: 2px;
+}
+
+.bubble-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chat-bubble {
+  max-width: 80%;
+  padding: 9px 13px;
+  border-radius: 16px;
+  word-break: break-word;
+  position: relative;
+}
+
+.bubble-me {
+  background: var(--max-primary);
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+}
+
+.bubble-other {
+  background: var(--max-card-bg);
+  border: 1px solid var(--max-border);
+  color: var(--max-text);
+  border-bottom-left-radius: 4px;
+}
+
+.bubble-author-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--max-primary);
+  display: block;
+  margin-bottom: 3px;
+}
+
+.bubble-message-text {
+  font-size: 14px;
+  line-height: 1.38;
+}
+
+.bubble-meta {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 3px;
+}
+
+.bubble-timestamp {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+/* Поле ввода сообщения в чате */
+.chat-composer-wrap {
+  padding: 10px 14px;
+  border-top: 1px solid var(--max-border);
+  background: var(--max-bg);
+  flex-shrink: 0;
+}
+
+.chat-composer-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-composer-input {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--max-border);
+  background: var(--max-card-bg);
+  color: var(--max-text);
+  font-size: 14.5px;
+}
+
+.chat-composer-input:focus {
+  border-color: var(--max-primary);
+}
+
+.btn-chat-send {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(120, 120, 128, 0.15);
+  color: var(--max-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.btn-chat-send.active {
+  background: var(--max-primary);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   ВКЛАДКА "МОИ ВСТРЕЧИ": Лёгкий стиль БЕЗ подложек
+   ========================================================================== */
+
+.mine-tab-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.mine-top-actions {
+  margin-bottom: 14px;
+}
+
+.mine-intro-text {
+  font-size: 13px;
+  color: var(--max-text-secondary);
+  line-height: 1.4;
+}
+
+.my-events-clean-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.my-event-clean-row {
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--max-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.my-event-top-info {
+  display: flex;
+  gap: 14px;
+  cursor: pointer;
+}
+
+.my-event-thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.my-event-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.my-event-header-badges {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.my-event-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--max-text);
+  line-height: 1.3;
+}
+
+.my-event-meta {
+  font-size: 12px;
+  color: var(--max-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.my-event-price {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--max-primary);
+  margin-top: 2px;
+}
+
+/* Панель кнопок встречи: Реферальная ссылка / Чат */
+.my-event-action-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-action-referral {
+  flex: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(108, 92, 231, 0.12);
+  color: #6c5ce7;
+  font-size: 12.5px;
+  font-weight: 600;
+  border: 1px solid rgba(108, 92, 231, 0.25);
+  transition: transform 0.1s ease;
+}
+
+.btn-action-referral:active {
+  transform: scale(0.97);
+}
+
+.btn-action-chat {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--max-primary-light);
+  color: var(--max-primary);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.btn-action-details {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--max-border);
+  color: var(--max-text);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.btn-empty-create-clean {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 20px;
+  border-radius: 999px;
+  background: var(--max-primary);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   МОДАЛКИ: Лёгкие нижние шторки / окна БЕЗ тяжёлых рамок
+   ========================================================================== */
+
+.social-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(5px);
+  z-index: 2500;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.social-modal-sheet {
+  width: 100%;
+  max-width: 580px;
+  background: var(--max-bg);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 20px 18px calc(24px + var(--safe-bottom, 0px));
+  max-height: 90vh;
+  overflow-y: auto;
+  border-top: 1px solid var(--max-border);
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.22s ease-out;
+}
+
+.modal-header-light {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.modal-title-light {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--max-text);
+  margin-top: 4px;
+}
+
+.btn-close-light {
+  color: var(--max-text-secondary);
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Бейджики */
+.referral-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(108, 92, 231, 0.12);
+  color: #6c5ce7;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.create-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--max-primary-light);
+  color: var(--max-primary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   СТИЛИ РЕФЕРАЛЬНОЙ ССЫЛКИ
+   ========================================================================== */
+
+.referral-event-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--max-border);
+  margin-bottom: 14px;
+}
+
+.referral-event-img {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.referral-event-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.referral-event-info h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--max-text);
+}
+
+.referral-event-info p {
+  font-size: 12px;
+  color: var(--max-text-secondary);
+  margin-top: 2px;
+}
+
+.referral-price-tag {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--max-primary);
+  margin-top: 3px;
+}
+
+.referral-explainer {
+  font-size: 13px;
+  color: var(--max-text-secondary);
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+
+.referral-link-box {
+  border: 1px solid var(--max-border);
+  border-radius: 14px;
+  padding: 12px;
+  background: var(--max-card-bg);
+  margin-bottom: 14px;
+}
+
+.referral-link-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--max-text-secondary);
+  margin-bottom: 8px;
+}
+
+.referral-code-label strong {
+  color: #6c5ce7;
+}
+
+.referral-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.referral-input {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--max-border);
+  background: var(--max-bg);
+  color: var(--max-text);
+  font-size: 13px;
+  font-family: monospace;
+}
+
+.btn-referral-copy {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 9px 14px;
+  border-radius: 8px;
+  background: var(--max-primary);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.btn-referral-copy.copied {
+  background: #34c759;
+}
+
+.btn-share-max-direct {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--max-primary);
+  color: #ffffff;
+  font-size: 14.5px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.invitation-text-block {
+  border: 1px solid var(--max-border);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.015);
+  margin-bottom: 16px;
+}
+
+.invitation-text-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--max-text-secondary);
+  margin-bottom: 8px;
+}
+
+.btn-copy-text-link {
+  color: var(--max-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.invitation-text-preview {
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--max-text);
+  line-height: 1.45;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.referral-stats-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--max-card-bg);
+  border: 1px solid var(--max-border);
+  margin-bottom: 14px;
+}
+
+.ref-stat-col {
+  text-align: center;
+}
+
+.ref-stat-num {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: #6c5ce7;
+}
+
+.ref-stat-text {
+  font-size: 11px;
+  color: var(--max-text-secondary);
+}
+
+.ref-stat-sep {
+  width: 1px;
+  height: 24px;
+  background: var(--max-border);
+}
+
+.btn-modal-chat-secondary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px;
+  border-radius: 12px;
+  border: 1px solid var(--max-border);
+  color: var(--max-text);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   ФОРМА СОЗДАНИЯ ВСТРЕЧИ: Лёгкие поля БЕЗ массивных подложек
+   ========================================================================== */
+
+.create-event-clean-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-clean-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.section-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.clean-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--max-text-secondary);
+}
+
+.clean-hint {
+  font-size: 11.5px;
+  color: var(--max-text-secondary);
+}
+
+.clean-input, .clean-select, .clean-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--max-border);
+  background: var(--max-card-bg);
+  color: var(--max-text);
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.clean-input:focus, .clean-select:focus, .clean-textarea:focus {
+  border-color: var(--max-primary);
+}
+
+.clean-textarea {
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.form-clean-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Галерея выбранных фото */
+.photos-preview-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0;
+  scrollbar-width: none;
+}
+
+.photos-preview-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.photo-thumb-wrap {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1.5px solid var(--max-primary);
+}
+
+.photo-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-main-tag {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  font-size: 9px;
+  text-align: center;
+  padding: 1px 0;
+}
+
+.btn-remove-photo {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-add-photo-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 62px;
+  height: 62px;
+  border-radius: 10px;
+  border: 1px dashed var(--max-primary);
+  background: var(--max-primary-light);
+  color: var(--max-primary);
+  font-size: 10px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.btn-add-photo-chip.secondary {
+  border-color: var(--max-border);
+  background: transparent;
+  color: var(--max-text-secondary);
+}
+
+.photo-url-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.btn-apply-url {
+  padding: 0 14px;
+  border-radius: 8px;
+  background: var(--max-primary);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Пресеты тем */
+.preset-covers-row {
+  margin-top: 4px;
+}
+
+.preset-row-title {
+  font-size: 11.5px;
+  color: var(--max-text-secondary);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.preset-pills-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.preset-pills-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.preset-pill {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--max-border);
+  background: transparent;
+  font-size: 11.5px;
+  color: var(--max-text-secondary);
+  white-space: nowrap;
+}
+
+.preset-pill.active {
+  background: var(--max-primary-light);
+  border-color: var(--max-primary);
+  color: var(--max-primary);
+  font-weight: 600;
+}
+
+/* Чипсы цен */
+.price-chips-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.price-chips-row::-webkit-scrollbar {
+  display: none;
+}
+
+.price-chip {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--max-border);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--max-text-secondary);
+  white-space: nowrap;
+}
+
+.price-chip.active {
+  background: var(--max-primary-light);
+  border-color: var(--max-primary);
+  color: var(--max-primary);
+}
+
+.custom-price-input {
+  margin-top: 6px;
+}
+
+/* Блок описания реферальной системы */
+.referral-highlight-box {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(108, 92, 231, 0.08);
+  border: 1px solid rgba(108, 92, 231, 0.2);
+}
+
+.ref-hl-icon {
+  color: #6c5ce7;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.ref-hl-text strong {
+  display: block;
+  font-size: 13px;
+  color: #6c5ce7;
+  margin-bottom: 2px;
+}
+
+.ref-hl-text p {
+  font-size: 12px;
+  color: var(--max-text);
+  line-height: 1.35;
+  margin: 0;
+}
+
+/* Селектор приватности */
+.privacy-pill-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.privacy-pill-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px;
+  border-radius: 10px;
+  border: 1px solid var(--max-border);
+  background: transparent;
+  color: var(--max-text-secondary);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.privacy-pill-btn.active {
+  background: var(--max-primary-light);
+  border-color: var(--max-primary);
+  color: var(--max-primary);
+}
+
+/* Кнопка отправки */
+.btn-submit-clean-event {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px;
+  border-radius: 12px;
+  background: var(--max-primary);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 6px;
+}

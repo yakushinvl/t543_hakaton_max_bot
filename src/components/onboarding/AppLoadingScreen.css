@@ -1,0 +1,333 @@
+/* ========================================================
+   APP LOADING SCREEN (ONBOARDING FULLSCREEN STYLE)
+   ======================================================== */
+
+.app-loading-onboarding-screen {
+  z-index: 3500;
+  pointer-events: all;
+  background-color: var(--max-bg);
+}
+
+.app-loading-city-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--max-primary, #6c5ce7);
+  margin-top: 4px;
+}
+
+/* ========================================================
+   ВИЗУАЛЬНАЯ КАРТОЧКА КАРТЫ В СТИЛЕ ОНБОРДИНГА
+   ======================================================== */
+
+.app-loading-visual-stage {
+  width: 100%;
+  max-width: 380px;
+  height: 280px;
+  margin: auto auto 12px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-map-minimal-box {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 28px;
+  background: var(--max-card-bg, #ffffff);
+  border: 1px solid var(--max-border, rgba(0, 0, 0, 0.08));
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Линии дорог и реки на карте */
+.loading-geo-line {
+  position: absolute;
+  background: var(--max-border, rgba(0, 0, 0, 0.08));
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.loading-geo-line.road-h {
+  left: 0;
+  right: 0;
+  top: 52%;
+  height: 2px;
+}
+
+.loading-geo-line.road-v {
+  top: 0;
+  bottom: 0;
+  left: 48%;
+  width: 2px;
+}
+
+.loading-river-curve {
+  position: absolute;
+  width: 320px;
+  height: 140px;
+  border: 3px solid rgba(0, 168, 255, 0.16);
+  border-radius: 50%;
+  top: 15%;
+  left: -40px;
+  pointer-events: none;
+}
+
+/* Радарные круги сканирования */
+.loading-radar-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid var(--max-primary, #6c5ce7);
+  pointer-events: none;
+  opacity: 0;
+  animation: loadingRadarWave 2.8s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+}
+
+.lr-1 {
+  width: 60px;
+  height: 60px;
+  animation-delay: 0s;
+}
+
+.lr-2 {
+  width: 130px;
+  height: 130px;
+  animation-delay: 0.9s;
+}
+
+.lr-3 {
+  width: 210px;
+  height: 210px;
+  animation-delay: 1.8s;
+}
+
+@keyframes loadingRadarWave {
+  0% {
+    transform: scale(0.35);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+/* Центральный пульсар пользователя/компаса */
+.loading-user-pulsar {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--max-primary, #6c5ce7);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.45);
+  z-index: 5;
+  animation: pulseCompass 2s ease-in-out infinite;
+}
+
+@keyframes pulseCompass {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.pulsar-icon {
+  animation: spinCompass 8s linear infinite;
+}
+
+@keyframes spinCompass {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Векторный маршрут */
+.loading-route-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Метки мероприятий, всплывающие по мере роста прогресса */
+.loading-map-pin {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 4;
+  opacity: 0;
+  transform: translate3d(0, 16px, 0) scale(0.7);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.loading-map-pin.pin-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.l-pin-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--max-card-bg, #ffffff);
+  border: 2px solid var(--max-primary, #6c5ce7);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+}
+
+.l-pin-tag {
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--max-text, #1e1e1e);
+  background: var(--max-card-bg, #ffffff);
+  border: 1px solid var(--max-border, rgba(0, 0, 0, 0.08));
+  padding: 2px 7px;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  white-space: nowrap;
+}
+
+.l-pin-1 {
+  top: 18%;
+  left: 14%;
+}
+
+.l-pin-2 {
+  top: 24%;
+  right: 14%;
+}
+
+.l-pin-3 {
+  bottom: 18%;
+  left: 18%;
+}
+
+.l-pin-4 {
+  bottom: 22%;
+  right: 16%;
+}
+
+/* ========================================================
+   НИЖНЯЯ ПАНЕЛЬ СТАТУСА И ПРОГРЕССА
+   ======================================================== */
+
+.app-loading-bottom-bar {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.app-loading-progress-card {
+  width: 100%;
+  background: var(--max-card-bg, #ffffff);
+  border: 1px solid var(--max-border, rgba(0, 0, 0, 0.08));
+  border-radius: 20px;
+  padding: 14px 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.app-loading-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.app-loading-hint-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.loading-status-icon {
+  flex-shrink: 0;
+  color: var(--max-primary, #6c5ce7);
+}
+
+.spinning-sparkle {
+  animation: spinSparkle 3s linear infinite;
+}
+
+@keyframes spinSparkle {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.text-success {
+  color: #10b981;
+}
+
+.app-loading-hint-text {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--max-text, #1e1e1e);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: hintLineFade 0.35s ease-out;
+}
+
+@keyframes hintLineFade {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.app-loading-pct-val {
+  font-size: 14px;
+  font-weight: 750;
+  color: var(--max-primary, #6c5ce7);
+  letter-spacing: -0.02em;
+}
+
+.app-loading-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--max-border, rgba(0, 0, 0, 0.08));
+  overflow: hidden;
+}
+
+.app-loading-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--max-primary, #6c5ce7);
+  transition: width 0.15s ease-out;
+}
