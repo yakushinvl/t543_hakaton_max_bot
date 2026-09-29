@@ -1,4 +1,20 @@
 import type { MaxWebApp, MaxUser } from '../types/max';
+import { loadAppSettings } from './storage';
+
+// Подавление неперехваченных ошибок от неподдерживаемых событий в max-web-app.js
+if (typeof window !== 'undefined') {
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = event.reason;
+    if (
+      reason &&
+      (reason.error === 'UnsupportedEvent' ||
+        reason?.type?.includes?.('HapticFeedback') ||
+        (typeof reason.message === 'string' && reason.message.includes('UnsupportedEvent')))
+    ) {
+      event.preventDefault();
+    }
+  });
+}
 
 export function getWebApp(): MaxWebApp | null {
   if (typeof window === 'undefined') return null;
@@ -120,28 +136,72 @@ export function subscribeToThemeChange(onThemeChange: () => void): () => void {
   }
 }
 
+export function isHapticSupported(): boolean {
+  const webApp = getWebApp();
+  if (!webApp) {
+    return typeof navigator !== 'undefined' && 'vibrate' in navigator;
+  }
+  const platform = (webApp.platform || '').toLowerCase();
+  // По официальной документации MAX:
+  // "Методы объекта HapticFeedback не поддерживаются десктоп- и веб-клиентом"
+  if (['desktop', 'web', 'macos', 'tdesktop', 'weba', 'webk'].includes(platform)) {
+    return false;
+  }
+  return Boolean(webApp.HapticFeedback && (platform === 'ios' || platform === 'android' || !platform));
+}
+
 export function triggerHaptic(
   type: 'light' | 'medium' | 'heavy' | 'selection' | 'success' | 'warning' | 'error' = 'light'
 ): void {
+  // 1. Проверяем настройки приложения (отключен ли тактильный отклик пользователем)
+  try {
+    const settings = loadAppSettings();
+    if (!settings.hapticEnabled) {
+      return;
+    }
+  } catch {
+    // В случае сбоя чтения настроек не прерываем выполнение
+  }
+
   const webApp = getWebApp();
-  if (!webApp?.HapticFeedback) {
-    // Web fallback vibrator
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      navigator.vibrate(type === 'selection' ? 10 : 25);
+  const platform = (webApp?.platform || '').toLowerCase();
+  const isDesktopOrWeb = ['desktop', 'web', 'macos', 'tdesktop', 'weba', 'webk'].includes(platform);
+
+  // 2. Если приложение запущено внутри клиента MAX
+  if (webApp?.HapticFeedback) {
+    // Десктоп- и веб-клиенты MAX не поддерживают HapticFeedback и возвращают UnsupportedEvent
+    if (isDesktopOrWeb) {
+      return;
+    }
+
+    try {
+      let result: any;
+      if (type === 'selection') {
+        result = webApp.HapticFeedback.selectionChanged();
+      } else if (type === 'success' || type === 'warning' || type === 'error') {
+        result = webApp.HapticFeedback.notificationOccurred(type);
+      } else {
+        result = webApp.HapticFeedback.impactOccurred(type);
+      }
+
+      // max-web-app.js возвращает Promise для RPC-вызовов к клиенту MAX.
+      // Обязательно перехватываем отказ промиса, предотвращая Uncaught (in promise)
+      if (result && typeof result.catch === 'function') {
+        result.catch(() => {});
+      }
+    } catch {
+      // Игнорируем синхронные исключения
     }
     return;
   }
 
-  try {
-    if (type === 'selection') {
-      webApp.HapticFeedback.selectionChanged();
-    } else if (type === 'success' || type === 'warning' || type === 'error') {
-      webApp.HapticFeedback.notificationOccurred(type);
-    } else {
-      webApp.HapticFeedback.impactOccurred(type);
+  // 3. Fallback вибрации для браузеров (только если поддерживается navigator.vibrate и не десктоп)
+  if (!isDesktopOrWeb && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    try {
+      navigator.vibrate(type === 'selection' ? 10 : 25);
+    } catch {
+      // Игнорируем
     }
-  } catch (e) {
-    // Ignore haptic errors on unsupported platforms
   }
 }
 
