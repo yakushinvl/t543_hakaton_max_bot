@@ -45,3 +45,38 @@ export function validateMaxInitData(initDataString: string, botToken = BOT_TOKEN
     return { valid: false };
   }
 }
+
+/**
+ * Безопасное извлечение пользователя из initData с валидацией подписи
+ */
+export function parseMaxUserFromInitData(
+  initDataString: string,
+  botToken = BOT_TOKEN
+): { valid: boolean; user: any | null; userId: string | null } {
+  if (!initDataString) {
+    return { valid: false, user: null, userId: null };
+  }
+
+  const result = validateMaxInitData(initDataString, botToken);
+  if (result.valid && result.data?.user) {
+    try {
+      const user = JSON.parse(result.data.user);
+      return { valid: true, user, userId: String(user.id) };
+    } catch {
+      return { valid: true, user: null, userId: null };
+    }
+  }
+
+  // Fallback для режима локальной разработки / веб-тестирования
+  try {
+    const params = new URLSearchParams(initDataString);
+    const userRaw = params.get('user');
+    if (userRaw) {
+      const user = JSON.parse(userRaw);
+      return { valid: false, user, userId: user.id ? String(user.id) : null };
+    }
+  } catch {}
+
+  return { valid: false, user: null, userId: null };
+}
+

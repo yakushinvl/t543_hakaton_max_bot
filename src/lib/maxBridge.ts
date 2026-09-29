@@ -1,5 +1,5 @@
 import type { MaxWebApp, MaxUser } from '../types/max';
-import { loadAppSettings } from './storage';
+
 
 // Подавление неперехваченных ошибок от неподдерживаемых событий в max-web-app.js
 if (typeof window !== 'undefined') {
@@ -42,6 +42,119 @@ export function getMaxUser(): MaxUser | null {
   return webApp?.initDataUnsafe?.user || null;
 }
 
+export function getMaxUserId(): string | null {
+  const user = getMaxUser();
+  if (user && user.id) {
+    return String(user.id);
+  }
+  // Поддержка query param в браузере для тестирования синхронизации разных аккаунтов
+  if (typeof window !== 'undefined') {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const qUser = urlParams.get('userId');
+      if (qUser) return qUser;
+    } catch {}
+  }
+  return null;
+}
+
+export function getMaxPlatform(): 'ios' | 'android' | 'desktop' | 'web' {
+  const webApp = getWebApp();
+  if (webApp?.platform) {
+    const p = webApp.platform.toLowerCase();
+    if (p.includes('ios')) return 'ios';
+    if (p.includes('android')) return 'android';
+    if (p.includes('desktop') || p.includes('macos') || p.includes('tdesktop')) return 'desktop';
+    return 'web';
+  }
+  return 'web';
+}
+
+export function getDeviceStorage() {
+  const webApp = getWebApp();
+  return webApp?.DeviceStorage || null;
+}
+
+/**
+ * Сохранить пару ключ-значение в нативное хранилище MAX Bridge (DeviceStorage / CloudStorage)
+ */
+export async function saveToBridgeStorage(key: string, value: string): Promise<boolean> {
+  const webApp = getWebApp();
+  if (!webApp) return false;
+
+  // 1. Пробуем нативный DeviceStorage (iOS, Android в MAX)
+  if (webApp.DeviceStorage && typeof webApp.DeviceStorage.setItem === 'function') {
+    try {
+      const res = webApp.DeviceStorage.setItem(key, value);
+      if (res instanceof Promise) {
+        await res;
+      }
+      return true;
+    } catch (err) {
+      console.warn('MAX DeviceStorage.setItem error:', err);
+    }
+  }
+
+  // 2. Пробуем CloudStorage при наличии
+  if (webApp.CloudStorage && typeof webApp.CloudStorage.setItem === 'function') {
+    try {
+      return await new Promise<boolean>((resolve) => {
+        const res = webApp.CloudStorage?.setItem(key, value, (err, ok) => {
+          resolve(!err && Boolean(ok));
+        });
+        if (res instanceof Promise) {
+          res.then(() => resolve(true)).catch(() => resolve(false));
+        }
+      });
+    } catch {}
+  }
+
+  return false;
+}
+
+/**
+ * Получить значение из нативного хранилища MAX Bridge (DeviceStorage / CloudStorage)
+ */
+export async function loadFromBridgeStorage(key: string): Promise<string | null> {
+  const webApp = getWebApp();
+  if (!webApp) return null;
+
+  // 1. Пробуем DeviceStorage
+  if (webApp.DeviceStorage && typeof webApp.DeviceStorage.getItem === 'function') {
+    try {
+      const res = webApp.DeviceStorage.getItem(key);
+      if (res instanceof Promise) {
+        const val = await res;
+        if (typeof val === 'string') return val;
+      } else if (typeof res === 'string') {
+        return res;
+      }
+    } catch (err) {
+      console.warn('MAX DeviceStorage.getItem error:', err);
+    }
+  }
+
+  // 2. Пробуем CloudStorage
+  if (webApp.CloudStorage && typeof webApp.CloudStorage.getItem === 'function') {
+    try {
+      return await new Promise<string | null>((resolve) => {
+        const res = webApp.CloudStorage?.getItem(key, (err, val) => {
+          if (!err && typeof val === 'string') {
+            resolve(val);
+          } else {
+            resolve(null);
+          }
+        });
+        if (res instanceof Promise) {
+          res.then((val: any) => resolve(typeof val === 'string' ? val : null)).catch(() => resolve(null));
+        }
+      });
+    } catch {}
+  }
+
+  return null;
+}
+
 export function getMaxInitData(): string {
   const webApp = getWebApp();
   return webApp?.initData || '';
@@ -51,6 +164,7 @@ export function getMaxColorScheme(): 'light' | 'dark' | null {
   const webApp = getWebApp();
   return webApp?.colorScheme || null;
 }
+
 
 export function applyThemeAndPalette(themeMode: 'auto' | 'light' | 'dark' = 'auto'): void {
   const webApp = getWebApp();
@@ -155,13 +269,19 @@ export function triggerHaptic(
 ): void {
   // 1. Проверяем настройки приложения (отключен ли тактильный отклик пользователем)
   try {
-    const settings = loadAppSettings();
-    if (!settings.hapticEnabled) {
-      return;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const raw = localStorage.getItem('max_event_app_settings_v1');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.hapticEnabled === false) {
+          return;
+        }
+      }
     }
   } catch {
     // В случае сбоя чтения настроек не прерываем выполнение
   }
+
 
   const webApp = getWebApp();
   const platform = (webApp?.platform || '').toLowerCase();

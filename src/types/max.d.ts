@@ -69,6 +69,29 @@ export interface MaxLocationManager {
   openSettings: () => void;
 }
 
+export interface MaxDeviceStorage {
+  setItem: (key: string, value: string) => Promise<void> | void;
+  getItem: (key: string) => Promise<string | null> | string | null;
+  removeItem: (key: string) => Promise<void> | void;
+  clear: () => Promise<void> | void;
+}
+
+export interface MaxSecureStorage {
+  setItem: (key: string, value: string) => Promise<void> | void;
+  getItem: (key: string) => Promise<string | null> | string | null;
+  removeItem: (key: string) => Promise<void> | void;
+  clear: () => Promise<void> | void;
+}
+
+export interface MaxCloudStorage {
+  setItem: (key: string, value: string, callback?: (err: any, ok: boolean) => void) => Promise<boolean> | void;
+  getItem: (key: string, callback?: (err: any, value: string) => void) => Promise<string> | void;
+  getItems: (keys: string[], callback?: (err: any, values: Record<string, string>) => void) => Promise<Record<string, string>> | void;
+  removeItem: (key: string, callback?: (err: any, ok: boolean) => void) => Promise<boolean> | void;
+  removeItems: (keys: string[], callback?: (err: any, ok: boolean) => void) => Promise<boolean> | void;
+  getKeys: (callback?: (err: any, keys: string[]) => void) => Promise<string[]> | void;
+}
+
 export interface MaxWebApp {
   initData: string;
   initDataUnsafe: MaxInitData;
@@ -84,6 +107,10 @@ export interface MaxWebApp {
   BackButton: MaxBackButton;
   HapticFeedback: MaxHapticFeedback;
   LocationManager?: MaxLocationManager;
+  DeviceStorage?: MaxDeviceStorage;
+  SecureStorage?: MaxSecureStorage;
+  CloudStorage?: MaxCloudStorage;
+
 
   ready: () => void;
   expand: () => void;

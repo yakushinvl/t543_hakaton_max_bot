@@ -174,3 +174,74 @@ export async function registerForEventApi(eventId: string, registration: Registr
   }
   return res.json();
 }
+
+export interface UserCloudSyncResponse {
+  success: boolean;
+  userId: string;
+  data: any;
+  isNew?: boolean;
+}
+
+export async function fetchUserCloudDataApi(
+  initData: string,
+  userId?: string
+): Promise<UserCloudSyncResponse | null> {
+  try {
+    const params = new URLSearchParams();
+    if (initData) params.set('initData', initData);
+    if (userId) params.set('userId', userId);
+
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    if (initData) {
+      headers['X-MAX-Init-Data'] = initData;
+    }
+    if (userId) {
+      headers['X-MAX-User-Id'] = userId;
+    }
+
+    const res = await fetch(`${API_BASE}/user/data?${params.toString()}`, {
+      headers,
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn('Failed to fetch user cloud data:', err);
+  }
+  return null;
+}
+
+export async function syncUserCloudDataApi(
+  initData: string,
+  data: any,
+  platform?: string,
+  userId?: string
+): Promise<UserCloudSyncResponse | null> {
+  try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    };
+    if (initData) headers['X-MAX-Init-Data'] = initData;
+    if (platform) headers['X-MAX-Platform'] = platform;
+    if (userId) headers['X-MAX-User-Id'] = userId;
+
+    const res = await fetch(`${API_BASE}/user/sync`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        initData,
+        userId,
+        platform,
+        data,
+      }),
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn('Failed to sync user cloud data:', err);
+  }
+  return null;
+}
+

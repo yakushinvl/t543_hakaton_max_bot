@@ -1023,3 +1023,164 @@
   background: var(--max-primary-light);
   color: var(--max-primary);
 }
+
+/* ==========================================================================
+   Синхронизация через MAX Bridge (Cross-platform account sync)
+   ========================================================================== */
+
+.air-sync-card {
+  background: var(--max-card-bg);
+  border: 1px solid var(--max-border);
+  border-radius: var(--max-radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.air-sync-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.air-sync-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(0, 119, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.air-sync-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.air-sync-username {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--max-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.air-sync-tag {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--max-primary);
+}
+
+.air-sync-sub {
+  font-size: 11.5px;
+  color: var(--max-text-secondary);
+  margin-top: 2px;
+}
+
+.air-platform-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--max-primary-light);
+  color: var(--max-primary);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.air-sync-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--max-text-secondary);
+  margin: 0;
+}
+
+.air-sync-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.air-btn-sync {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--max-radius-sm);
+  background: var(--max-primary);
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.air-btn-sync:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.air-btn-sync:not(:disabled):hover {
+  background: #0066dd;
+  transform: translateY(-1px);
+}
+
+.air-sync-status-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #2ed573;
+  font-weight: 600;
+  animation: fadeIn 0.2s ease;
+}
+
+.air-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Бейдж аккаунта в Hero профиля */
+.air-max-account-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--max-card-bg);
+  border: 1px solid var(--max-border);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--max-text-secondary);
+}
+
+.air-max-account-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2ed573;
+  box-shadow: 0 0 6px rgba(46, 213, 115, 0.6);
+}
+
+.air-max-platform-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--max-primary-light);
+  color: var(--max-primary);
+}
+

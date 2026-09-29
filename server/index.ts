@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { fetchKudaGoEventsForCity } from './kudago';
 import { db } from './db';
-import { validateMaxInitData } from './maxAuth';
+import { validateMaxInitData, parseMaxUserFromInitData } from './maxAuth';
 import { analyzeWithLocalSemanticEngine, analyzeWithCloudLLM, type FlugerAIRequest } from './flugerAI';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -259,6 +259,98 @@ app.post('/api/auth/validate', (req, res) => {
   const result = validateMaxInitData(initData);
   res.json(result);
 });
+
+// Получение данных пользователя MAX для синхронизации между платформами (iOS, Android, Desktop, Web)
+app.get('/api/user/data', (req, res) => {
+  try {
+    let userId: string | null = null;
+    let maxUser: any = null;
+    let isValid = false;
+
+    const initData =
+      (req.headers['x-max-init-data'] as string) ||
+      (req.headers['authorization']?.startsWith('Bearer ') ? req.headers['authorization'].slice(7) : '') ||
+      (req.query.initData as string) ||
+      '';
+
+    if (initData) {
+      const parsed = parseMaxUserFromInitData(initData);
+      if (parsed.userId) {
+        userId = parsed.userId;
+        maxUser = parsed.user;
+        isValid = parsed.valid;
+      }
+    }
+
+    if (!userId) {
+      userId = (req.query.userId as string) || (req.headers['x-max-user-id'] as string) || null;
+    }
+
+    if (!userId) {
+      return res.status(400).json({ success: false, error: 'User ID or initData is required' });
+    }
+
+    const userData = db.getUserData(userId);
+
+    res.json({
+      success: true,
+      userId,
+      maxUser,
+      validSignature: isValid,
+      isNew: !userData,
+      data: userData || null,
+    });
+  } catch (err: any) {
+    console.error('Error fetching user data:', err);
+    res.status(500).json({ success: false, error: err.message || 'Server error' });
+  }
+});
+
+// Сохранение и двусторонняя синхронизация данных пользователя MAX
+app.post('/api/user/sync', (req, res) => {
+  try {
+    let userId: string | null = null;
+    let isValid = false;
+
+    const initData =
+      req.body.initData ||
+      (req.headers['x-max-init-data'] as string) ||
+      (req.headers['authorization']?.startsWith('Bearer ') ? req.headers['authorization'].slice(7) : '') ||
+      '';
+
+    if (initData) {
+      const parsed = parseMaxUserFromInitData(initData);
+      if (parsed.userId) {
+        userId = parsed.userId;
+        isValid = parsed.valid;
+      }
+    }
+
+    if (!userId) {
+      userId = req.body.userId || (req.headers['x-max-user-id'] as string) || null;
+    }
+
+    if (!userId) {
+      return res.status(400).json({ success: false, error: 'User ID or initData is required' });
+    }
+
+    const incomingData = req.body.data || {};
+    const platform = req.body.platform || (req.headers['x-max-platform'] as string);
+
+    const saved = db.saveUserData(userId, incomingData, platform);
+
+    res.json({
+      success: true,
+      userId,
+      validSignature: isValid,
+      data: saved,
+    });
+  } catch (err: any) {
+    console.error('Error syncing user data:', err);
+    res.status(500).json({ success: false, error: err.message || 'Server error' });
+  }
+});
+
 
 // Статика в продакшене (dist)
 const distPath = path.join(__dirname, '..', 'dist');

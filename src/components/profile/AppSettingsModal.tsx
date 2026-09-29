@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import type { UserProfile, ThemeMode, FeedViewMode } from '../../types/user';
-import { loadAppSettings, saveAppSettings, type AppSettings } from '../../lib/storage';
-import { triggerHaptic, isMaxPlatform } from '../../lib/maxBridge';
-import { X, Moon, Sun, Monitor, Bell, Vibrate, RotateCcw, Trash2, Info, LayoutList, LayoutGrid, Check } from 'lucide-react';
+import { loadAppSettings, saveAppSettings, syncCurrentUserDataToCloud, type AppSettings } from '../../lib/storage';
+import { triggerHaptic, isMaxPlatform, getMaxUser, getMaxUserId, getMaxPlatform } from '../../lib/maxBridge';
+import { X, Moon, Sun, Monitor, Bell, Vibrate, RotateCcw, Trash2, Info, LayoutList, LayoutGrid, Check, Cloud, RefreshCw } from 'lucide-react';
+
 import './ProfileScreen.css';
 
 interface AppSettingsModalProps {
@@ -21,6 +22,20 @@ export const AppSettingsModal: React.FC<AppSettingsModalProps> = ({
   const [settings, setSettings] = useState<AppSettings>(() => loadAppSettings());
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [cacheCleared, setCacheCleared] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+
+  const maxUser = getMaxUser();
+  const currentPlatform = getMaxPlatform();
+  const userId = getMaxUserId();
+  const platformLabel =
+    {
+      ios: 'iOS (iPhone / iPad)',
+      android: 'Android',
+      desktop: 'Desktop (macOS / Windows)',
+      web: 'Web (Браузер)',
+    }[currentPlatform] || currentPlatform.toUpperCase();
+
 
   const handleThemeChange = (mode: ThemeMode) => {
     triggerHaptic('selection');
@@ -182,9 +197,68 @@ export const AppSettingsModal: React.FC<AppSettingsModalProps> = ({
             </div>
           </div>
 
-          {/* 4. Очистка и сброс */}
+          {/* 4. Синхронизация данных через MAX Bridge */}
+          <div className="air-settings-group">
+            <label className="air-group-label">Синхронизация через MAX Bridge</label>
+            <div className="air-sync-card">
+              <div className="air-sync-header">
+                <div className="air-sync-icon-wrap">
+                  <Cloud size={20} color="#0077ff" />
+                </div>
+                <div className="air-sync-user-info">
+                  <div className="air-sync-username">
+                    {maxUser
+                      ? `${maxUser.first_name}${maxUser.last_name ? ` ${maxUser.last_name}` : ''}`
+                      : profile.name}
+                    {maxUser?.username && <span className="air-sync-tag">@{maxUser.username}</span>}
+                  </div>
+                  <div className="air-sync-sub">
+                    ID аккаунта MAX: {userId || 'Гость (Web-сессия)'}
+                  </div>
+                </div>
+                <span className="air-platform-badge">{platformLabel}</span>
+              </div>
+
+              <p className="air-sync-desc">
+                Данные профиля, персоны, сохранённые события и билеты привязаны к вашему аккаунту MAX и доступны на всех платформах (iOS, Android, Desktop, Web).
+              </p>
+
+              <div className="air-sync-actions">
+                <button
+                  type="button"
+                  className="air-btn-sync"
+                  disabled={isSyncing}
+                  onClick={async () => {
+                    triggerHaptic('medium');
+                    setIsSyncing(true);
+                    setSyncMessage(null);
+                    const ok = await syncCurrentUserDataToCloud();
+                    setIsSyncing(false);
+                    if (ok) {
+                      setSyncMessage('Данные успешно синхронизированы с облаком MAX!');
+                    } else {
+                      setSyncMessage('Синхронизация сохранена локально (офлайн)');
+                    }
+                    setTimeout(() => setSyncMessage(null), 3500);
+                  }}
+                >
+                  <RefreshCw size={15} className={isSyncing ? 'air-spin' : ''} />
+                  <span>{isSyncing ? 'Синхронизация...' : 'Синхронизировать сейчас'}</span>
+                </button>
+
+                {syncMessage && (
+                  <span className="air-sync-status-msg">
+                    <Check size={14} color="#2ed573" /> {syncMessage}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* 5. Очистка и сброс */}
           <div className="air-settings-group">
             <label className="air-group-label">Управление данными</label>
+
             
             <div className="air-action-buttons">
               <button

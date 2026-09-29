@@ -7,7 +7,8 @@ import { RegistrationFormModal } from './RegistrationFormModal';
 import { EditProfileModal } from './EditProfileModal';
 import { AppSettingsModal } from './AppSettingsModal';
 import { switchOrCreatePersonaProfile } from '../../lib/storage';
-import { triggerHaptic } from '../../lib/maxBridge';
+import { triggerHaptic, getMaxPlatform, getMaxUser } from '../../lib/maxBridge';
+
 import {
   Pencil,
   Settings,
@@ -159,8 +160,15 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
               {genderOpt && <EmojiIcon e={genderOpt.icon} />} {genderOpt?.label}
             </span>
           </div>
+
+          <div className="air-max-account-chip" title="Данные профиля и событий сохранены относительно аккаунта MAX">
+            <span className="air-max-account-dot" />
+            <span>Аккаунт MAX{getMaxUser()?.username ? ` (@${getMaxUser()?.username})` : ''}</span>
+            <span className="air-max-platform-tag">{getMaxPlatform().toUpperCase()}</span>
+          </div>
         </div>
       </section>
+
 
       {/* 3. Продуманные профили: Persona Switcher */}
       <section className="air-persona-section">

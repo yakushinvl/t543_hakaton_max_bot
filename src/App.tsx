@@ -12,7 +12,15 @@ import { ProfileScreen } from './components/profile/ProfileScreen';
 import { EventDetailModal } from './components/events/EventDetailModal';
 import { initMaxBridge, getMaxUser, applyThemeAndPalette, subscribeToThemeChange } from './lib/maxBridge';
 import { fetchEvents } from './lib/api';
-import { loadStoredProfile, saveStoredProfile, loadEventStatuses, saveEventStatus, loadStoredCustomEvents } from './lib/storage';
+import {
+  loadStoredProfile,
+  saveStoredProfile,
+  loadEventStatuses,
+  saveEventStatus,
+  loadStoredCustomEvents,
+  fetchAndApplyUserCloudData,
+  subscribeToSyncStatus,
+} from './lib/storage';
 import { DEFAULT_CITY, CITIES, type City } from './data/cities';
 import { detectUserLocation } from './lib/geolocation';
 
@@ -43,17 +51,43 @@ export default function App() {
     return unsubscribe;
   }, [profile?.themeMode]);
 
-  // Инициализация MAX Bridge и геолокации
+  // Инициализация MAX Bridge, геолокации и синхронизации данных аккаунта
   useEffect(() => {
     initMaxBridge();
-    // Если профиль уже сохранён, но фото ещё нет — пробуем обновить из MAX
-    if (profile && !profile.avatarUrl) {
-      const maxUser = getMaxUser();
-      if (maxUser?.photo_url) {
-        const updated = { ...profile, avatarUrl: maxUser.photo_url };
-        setProfile(updated);
-        saveStoredProfile(updated);
+
+    // 1. Двусторонняя синхронизация с аккаунтом MAX через MAX Bridge
+    // Позволяет получить данные пользователя с любой другой платформы (iOS / Android / Desktop / Web)
+    fetchAndApplyUserCloudData().then((res) => {
+      if (res.data?.profile) {
+        setProfile(res.data.profile);
       }
+      if (res.data?.eventStatuses) {
+        setEventStatuses(res.data.eventStatuses);
+      }
+    });
+
+    // Слушатель фоновой синхронизации аккаунта
+    const unsubSync = subscribeToSyncStatus((_status, cloudData) => {
+      if (cloudData?.profile) {
+        setProfile((prev) => ({ ...(prev || {}), ...cloudData.profile }));
+      }
+      if (cloudData?.eventStatuses) {
+        setEventStatuses((prev) => ({ ...(prev || {}), ...cloudData.eventStatuses }));
+      }
+    });
+
+    // Если профиль уже сохранён, но фото ещё нет — пробуем обновить из MAX
+    const maxUser = getMaxUser();
+    if (maxUser?.photo_url) {
+      setProfile((prev) => {
+        if (!prev) return prev;
+        if (!prev.avatarUrl) {
+          const updated = { ...prev, avatarUrl: maxUser.photo_url };
+          saveStoredProfile(updated);
+          return updated;
+        }
+        return prev;
+      });
     }
 
     // Автоматическое определение города по геолокации при запуске
@@ -70,7 +104,12 @@ export default function App() {
         });
       }
     }).catch(() => {});
+
+    return () => {
+      unsubSync();
+    };
   }, []);
+
 
   // Загрузка событий города при смене города в профиле
   const currentCitySlug = profile?.citySlug || DEFAULT_CITY.slug;
