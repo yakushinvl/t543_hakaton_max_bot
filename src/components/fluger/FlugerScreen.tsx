@@ -19,6 +19,7 @@ import {
   Heart,
 } from 'lucide-react';
 import './FlugerScreen.css';
+import { EmojiIcon } from '../icons/EmojiIcon';
 
 interface FlugerScreenProps {
   events: EventItem[];
@@ -30,6 +31,9 @@ interface FlugerScreenProps {
 }
 
 type ViewMode = 'intro' | 'quiz' | 'analyzing' | 'results';
+
+// Минимальная длительность экрана анализа: рост мачты (~1с) + полный оборот «раздумий»
+const ANALYZING_MIN_MS = 3400;
 
 export const FlugerScreen: React.FC<FlugerScreenProps> = ({
   events,
@@ -103,15 +107,19 @@ export const FlugerScreen: React.FC<FlugerScreenProps> = ({
     setViewMode('analyzing');
     triggerHaptic('medium');
 
+    const startedAt = Date.now();
+
     try {
       const citySlug = profile?.citySlug || 'kzn';
       const result = await queryFlugerAI(events, profile, finalAnswers, citySlug, currentCity);
 
+      // Даём флюгеру вырасти и покрутиться хотя бы один «цикл раздумий»
+      const elapsed = Date.now() - startedAt;
       setTimeout(() => {
         setAiResult(result);
         setViewMode('results');
         triggerHaptic('success');
-      }, 1000);
+      }, Math.max(ANALYZING_MIN_MS - elapsed, 400));
     } catch {
       setViewMode('intro');
     }
@@ -129,17 +137,19 @@ export const FlugerScreen: React.FC<FlugerScreenProps> = ({
               <div className="stage-chat-line anim-line anim-delay-1">Куда дует ветер</div>
               <div className="stage-chat-line anim-line anim-delay-2">событий сегодня?</div>
               <div className="stage-chat-line anim-line anim-delay-3">Спроси у Флюгера</div>
+
+              <button
+                className="onboarding-bottom-main-btn fluger-intro-cta anim-line anim-delay-4"
+                onClick={handleStartFlow}
+              >
+                <span>Начать</span>
+                <ArrowRight size={17} />
+              </button>
             </div>
 
-            <div className="stage-bottom-visual anim-line anim-delay-4">
-              <FlugerAIAnimation statusText="" />
+            <div className="stage-bottom-visual fluger-ground">
+              <FlugerAIAnimation mode="idle" />
             </div>
-          </div>
-
-          <div className="onboarding-bottom-actions-bar">
-            <button className="onboarding-bottom-main-btn" onClick={handleStartFlow}>
-              Начать
-            </button>
           </div>
         </div>
       )}
@@ -175,7 +185,7 @@ export const FlugerScreen: React.FC<FlugerScreenProps> = ({
                       onClick={() => handleSelectOption(opt.id)}
                     >
                       <div className="gender-circle-inner">
-                        <span className="gender-circle-icon">{opt.emoji}</span>
+                        <span className="gender-circle-icon"><EmojiIcon e={opt.emoji} /></span>
                         <span className="gender-circle-label">{opt.label}</span>
                       </div>
                       {isSelected && (
@@ -190,8 +200,8 @@ export const FlugerScreen: React.FC<FlugerScreenProps> = ({
             </div>
           </div>
 
-          <div className="stage-bottom-visual">
-            <FlugerAIAnimation statusText="" className="quiz-bottom-mini" />
+          <div className="stage-bottom-visual fluger-ground">
+            <FlugerAIAnimation mode="idle" size="compact" nudgeKey={currentStep} />
           </div>
         </div>
       )}
@@ -208,8 +218,8 @@ export const FlugerScreen: React.FC<FlugerScreenProps> = ({
               </h1>
             </div>
 
-            <div className="stage-bottom-visual anim-line anim-delay-2">
-              <FlugerAIAnimation isSpinning={true} statusText="" />
+            <div className="stage-bottom-visual fluger-ground">
+              <FlugerAIAnimation mode="thinking" />
             </div>
           </div>
         </div>
@@ -314,17 +324,14 @@ export const FlugerScreen: React.FC<FlugerScreenProps> = ({
             })}
           </div>
 
-          <div className="stage-bottom-visual">
-            <FlugerAIAnimation
-              compassAngle={aiResult.compassAngle}
-              statusText=""
-            />
-          </div>
-
           <div className="onboarding-bottom-actions-bar">
             <button className="onboarding-bottom-main-btn" onClick={handleStartFlow}>
               Повторить
             </button>
+          </div>
+
+          <div className="stage-bottom-visual fluger-ground">
+            <FlugerAIAnimation mode="result" size="compact" compassAngle={aiResult.compassAngle} />
           </div>
         </div>
       )}

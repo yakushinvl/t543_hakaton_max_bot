@@ -12,6 +12,7 @@ import { HurricaneAnimation } from './animations/HurricaneAnimation';
 import { ArrowRight, ArrowLeft, Check } from 'lucide-react';
 import { getAllInterests } from '../../config/interests.config';
 import './Onboarding.css';
+import { EmojiIcon } from '../icons/EmojiIcon';
 
 interface OnboardingModalProps {
   onComplete: (profile: UserProfile) => void;
@@ -186,7 +187,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   return (
     <div
-      className={`onboarding-root-fullscreen ${step === 8 ? 'root-step-interests' : ''}`}
+      className={`onboarding-root-fullscreen ${step === 8 ? 'root-step-interests' : ''} ${
+        step <= 3 ? 'root-bleed-visual' : ''
+      }`}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -216,7 +219,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               </h1>
             </div>
 
-            <div className="stage-bottom-visual anim-line anim-delay-4">
+            <div className="stage-bottom-visual visual-bleed">
               <PartyAnimation />
             </div>
           </div>
@@ -235,7 +238,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               </h1>
             </div>
 
-            <div className="stage-bottom-visual anim-line anim-delay-4">
+            <div className="stage-bottom-visual visual-bleed">
               <MapAnimation />
             </div>
           </div>
@@ -254,8 +257,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               </h1>
             </div>
 
-            <div className="stage-bottom-visual anim-line anim-delay-4">
-              <FlugerAIAnimation />
+            <div className="stage-bottom-visual visual-bleed">
+              <FlugerAIAnimation mode="demo" />
             </div>
           </div>
         )}
@@ -273,7 +276,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               </h1>
             </div>
 
-            <div className="stage-bottom-visual anim-line anim-delay-4">
+            <div className="stage-bottom-visual visual-bleed">
               <CreateEventAnimation />
             </div>
           </div>
@@ -382,7 +385,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     }}
                   >
                     <div className="gender-circle-inner">
-                      <span className="gender-circle-icon">{opt.icon}</span>
+                      <span className="gender-circle-icon"><EmojiIcon e={opt.icon} /></span>
                       <span className="gender-circle-label">{opt.label}</span>
                     </div>
                     {gender === opt.value && (
@@ -425,9 +428,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             <div className="stage-text-block">
               <div className="welcome-avatar-ring anim-line anim-delay-1">
                 <span className="welcome-avatar-icon">
-                  {getGenderOptions(ageGroup).find((o) => o.value === gender)?.icon || '🌟'}
+                  <EmojiIcon e={getGenderOptions(ageGroup).find((o) => o.value === gender)?.icon || '🌟'} />
                 </span>
-                <div className="welcome-sparkle-badge">✓</div>
+                <div className="welcome-sparkle-badge">
+                  <Check size={14} strokeWidth={3} />
+                </div>
               </div>
 
               <h1 className="stage-main-title welcome-title anim-line anim-delay-2">
@@ -444,7 +449,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <div className="summary-item">
                   <span className="summary-label">Интересы</span>
                   <span className="summary-val">
-                    {selectedInterestsData.slice(0, 3).map((i) => i.emoji).join(' ')}
+                    {selectedInterestsData.slice(0, 3).map((i) => (
+                      <EmojiIcon key={i.id} e={i.emoji} />
+                    ))}
                     {selectedInterestsData.length > 3 && ` +${selectedInterestsData.length - 3}`}
                   </span>
                 </div>

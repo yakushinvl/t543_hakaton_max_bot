@@ -5,6 +5,7 @@ import { shareEventToMax, triggerHaptic } from '../../lib/maxBridge';
 import { recordReferralShare, loadReferralStats } from '../../lib/storage';
 import { X, Copy, Check, Share2, Users, Sparkles, MessageCircle, Gift, ArrowUpRight, Lock } from 'lucide-react';
 import './SocialScreen.css';
+import { EmojiText } from '../icons/EmojiIcon';
 
 interface ReferralLinkModalProps {
   event: EventItem;
@@ -152,7 +153,7 @@ ${referralUrl}`;
               {copiedMessage ? 'Скопировано!' : 'Скопировать текст'}
             </button>
           </div>
-          <pre className="invitation-text-preview">{inviteMessage}</pre>
+          <pre className="invitation-text-preview"><EmojiText text={inviteMessage} /></pre>
         </div>
 
         {/* Статистика по реферальной ссылке */}

@@ -218,6 +218,32 @@
   padding-bottom: 8px;
 }
 
+/* Этапы 0–3: визуализация доходит до самой нижней границы экрана,
+   а панель со стрелками лежит поверх неё */
+.onboarding-root-fullscreen.root-bleed-visual {
+  padding-bottom: 0;
+}
+
+.root-bleed-visual .onboarding-bottom-actions-bar {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: calc(18px + var(--safe-bottom));
+  width: auto;
+}
+
+.root-bleed-visual .onboarding-corner-arrow-btn {
+  background: var(--max-card-bg);
+  opacity: 0.92;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.stage-bottom-visual.visual-bleed {
+  padding-bottom: 0;
+  /* Визуализация начинает вырастать, пока дописываются строки текста */
+  --anim-enter-delay: 1.25s;
+}
+
 /* ========================================================
    ЭТАП 5: ПОЛЕ С ИМЕНЕМ СВЕРХУ С ЗАКРУГЛЕННОЙ РАМКОЙ
    ======================================================== */

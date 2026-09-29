@@ -1,5 +1,6 @@
 import React from 'react';
 import './Animations.css';
+import { EmojiIcon, EmojiText } from '../../icons/EmojiIcon';
 
 export const HurricaneAnimation: React.FC = () => {
   return (
@@ -13,31 +14,41 @@ export const HurricaneAnimation: React.FC = () => {
 
         {/* Центр урагана */}
         <div className="clean-vortex-center">
-          <span className="vortex-center-emoji">🌪️</span>
+          <span className="vortex-center-emoji">
+            <EmojiIcon e="🌪️" />
+          </span>
         </div>
 
         {/* 4 аккуратных минималистичных плашки возможностей на орбитах */}
         <div className="clean-orbit orbit-a">
           <div className="clean-chip chip-a">
-            <span>🎟️ Билеты</span>
+            <span>
+              <EmojiText text="🎟️ Билеты" />
+            </span>
           </div>
         </div>
 
         <div className="clean-orbit orbit-b">
           <div className="clean-chip chip-b">
-            <span>🗺️ Живая карта</span>
+            <span>
+              <EmojiText text="🗺️ Живая карта" />
+            </span>
           </div>
         </div>
 
         <div className="clean-orbit orbit-c">
           <div className="clean-chip chip-c">
-            <span>💬 Чаты MAX</span>
+            <span>
+              <EmojiText text="💬 Чаты MAX" />
+            </span>
           </div>
         </div>
 
         <div className="clean-orbit orbit-d">
           <div className="clean-chip chip-d">
-            <span>☕ Кофе & Еда</span>
+            <span>
+              <EmojiText text="☕ Кофе & Еда" />
+            </span>
           </div>
         </div>
       </div>

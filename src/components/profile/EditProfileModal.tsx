@@ -6,6 +6,7 @@ import { AppleWatchGrid } from '../onboarding/AppleWatchGrid';
 import { triggerHaptic } from '../../lib/maxBridge';
 import { X, Check, MapPin, Smile } from 'lucide-react';
 import './ProfileScreen.css';
+import { EmojiIcon } from '../icons/EmojiIcon';
 
 interface EditProfileModalProps {
   profile: UserProfile;
@@ -100,7 +101,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   className={`air-role-pill ${profileType === preset.type ? 'active' : ''}`}
                   onClick={() => handlePresetSelect(preset.type)}
                 >
-                  <span className="air-role-emoji">{preset.emoji}</span>
+                  <span className="air-role-emoji"><EmojiIcon e={preset.emoji} /></span>
                   <span className="air-role-name">{preset.name}</span>
                 </button>
               ))}
@@ -147,7 +148,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                     setAvatarEmoji(emoji);
                   }}
                 >
-                  {emoji}
+                  <EmojiIcon e={emoji} />
                 </button>
               ))}
             </div>
@@ -202,7 +203,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                     setGender(opt.value);
                   }}
                 >
-                  <span>{opt.icon}</span>
+                  <span><EmojiIcon e={opt.icon} /></span>
                   <span>{opt.label}</span>
                 </button>
               ))}

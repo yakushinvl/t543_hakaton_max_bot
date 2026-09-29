@@ -1,0 +1,212 @@
+/* ========================================================
+   2. MAP ANIMATION — ИНТЕРАКТИВНАЯ КАРТА С АЛГОРИТМАМИ
+   Карта выезжает из нижнего края, падают пины, луч алгоритма
+   сканирует окрестности, линии тянутся к событиям, лучшее
+   совпадение подсвечивается бейджем. Цикл 6с.
+   ======================================================== */
+.map-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: hidden;
+  --map-cycle: 6s;
+}
+
+.map-svg * {
+  transform-box: fill-box;
+}
+
+.map-card-bg {
+  fill: var(--max-card-bg);
+  stroke: var(--max-border);
+  stroke-width: 1.5;
+}
+
+.map-park {
+  fill: rgba(75, 179, 75, 0.16);
+}
+
+.map-block {
+  fill: var(--max-bg);
+}
+
+.map-river {
+  stroke: rgba(0, 119, 255, 0.18);
+  stroke-width: 16;
+  stroke-linecap: round;
+}
+
+.map-road {
+  fill: none;
+  stroke: var(--max-border);
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+.map-road-thin {
+  stroke-width: 4;
+  opacity: 0.8;
+}
+
+/* Чипсы фильтров */
+.map-chip {
+  fill: var(--max-card-bg);
+  stroke: var(--max-border);
+  stroke-width: 1.2;
+}
+
+.map-chip-active {
+  fill: var(--max-primary);
+  stroke: none;
+}
+
+.map-chip-text {
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-anchor: middle;
+  fill: var(--max-text-secondary);
+}
+
+.map-chip-text-active {
+  fill: #ffffff;
+}
+
+/* Сканирующий луч */
+.map-sweep {
+  transform-origin: 0% 100%;
+  animation: mapSweepSpin 3s linear infinite;
+}
+
+@keyframes mapSweepSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Линии рекомендаций */
+.map-link {
+  stroke: var(--max-primary);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  opacity: 0.45;
+  animation: mapLinkDraw var(--map-cycle) ease-in-out infinite both;
+}
+
+.map-link.is-best {
+  stroke-width: 3;
+  animation-name: mapLinkDrawBest;
+}
+
+@keyframes mapLinkDraw {
+  0%, 16% { stroke-dashoffset: 100; opacity: 0.45; }
+  30% { stroke-dashoffset: 0; opacity: 0.45; }
+  42% { stroke-dashoffset: 0; opacity: 0.18; }
+  86% { stroke-dashoffset: 0; opacity: 0.18; }
+  94%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+@keyframes mapLinkDrawBest {
+  0%, 16% { stroke-dashoffset: 100; opacity: 0.5; }
+  30% { stroke-dashoffset: 0; opacity: 0.6; }
+  42% { stroke-dashoffset: 0; opacity: 1; }
+  86% { stroke-dashoffset: 0; opacity: 1; }
+  94%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+/* Пины */
+.map-pin {
+  transform-origin: 50% 100%;
+  animation: mapPinDrop var(--map-cycle) cubic-bezier(0.34, 1.56, 0.64, 1) infinite both;
+}
+
+.map-pin.is-best {
+  animation-name: mapPinDropBest;
+}
+
+.map-pin-shadow {
+  fill: rgba(0, 0, 0, 0.18);
+}
+
+.map-pin-emoji {
+  font-size: 15px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+@keyframes mapPinDrop {
+  0% { transform: translateY(-46px) scale(0.6); opacity: 0; }
+  9% { transform: translateY(0) scale(1); opacity: 1; }
+  42% { transform: translateY(0) scale(1); opacity: 1; }
+  48% { transform: translateY(0) scale(0.88); opacity: 0.55; }
+  88% { transform: translateY(0) scale(0.88); opacity: 0.55; }
+  96%, 100% { transform: translateY(0) scale(0.4); opacity: 0; }
+}
+
+@keyframes mapPinDropBest {
+  0% { transform: translateY(-46px) scale(0.6); opacity: 0; }
+  9% { transform: translateY(0) scale(1); opacity: 1; }
+  38% { transform: translateY(0) scale(1); }
+  46% { transform: translateY(-6px) scale(1.28); }
+  52% { transform: translateY(0) scale(1.2); opacity: 1; }
+  88% { transform: translateY(0) scale(1.2); opacity: 1; }
+  96%, 100% { transform: translateY(0) scale(0.4); opacity: 0; }
+}
+
+.map-best-ring {
+  fill: none;
+  stroke: var(--max-primary);
+  stroke-width: 2;
+  transform-origin: 50% 50%;
+  animation: mapBestRing 1.4s ease-out infinite both;
+}
+
+@keyframes mapBestRing {
+  0% { transform: scale(0.7); opacity: 0.8; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* Бейдж совпадения */
+.map-badge-bg {
+  fill: var(--max-card-bg);
+  stroke: var(--max-primary);
+  stroke-width: 1.5;
+  filter: drop-shadow(0 4px 10px rgba(0, 119, 255, 0.22));
+}
+
+.map-badge-text {
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 12.5px;
+  font-weight: 800;
+  text-anchor: middle;
+  fill: var(--max-primary);
+}
+
+.map-match-badge {
+  transform-origin: 50% 100%;
+  animation: mapBadgePop var(--map-cycle) cubic-bezier(0.34, 1.56, 0.64, 1) infinite both;
+}
+
+@keyframes mapBadgePop {
+  0%, 46% { transform: translateY(10px) scale(0.5); opacity: 0; }
+  54% { transform: translateY(0) scale(1); opacity: 1; }
+  86% { transform: translateY(0) scale(1); opacity: 1; }
+  93%, 100% { transform: translateY(-6px) scale(0.9); opacity: 0; }
+}
+
+/* Пользователь */
+.map-me-pulse {
+  fill: var(--max-primary);
+  transform-origin: 50% 50%;
+  animation: mapMePulse 2s ease-out infinite both;
+}
+
+.map-me-pulse.pulse-2 {
+  animation-delay: 1s;
+}
+
+@keyframes mapMePulse {
+  0% { transform: scale(0.6); opacity: 0.45; }
+  100% { transform: scale(3.2); opacity: 0; }
+}

@@ -1,0 +1,149 @@
+/* ========================================================
+   1. PARTY ANIMATION — ТУСОВКА
+   Толпа растёт из нижнего края, прыгает в такт, сверху
+   качается диско-шар, прожекторы сканируют танцпол.
+   ======================================================== */
+.party-anim-container.anim-bleed {
+  height: 320px;
+}
+
+.party-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: hidden;
+}
+
+.party-svg * {
+  transform-box: fill-box;
+}
+
+/* Танцоры: подпрыгивают на «бит» */
+.party-dancer {
+  transform-origin: 50% 100%;
+  animation: partyBounce 0.5s ease-in-out infinite alternate both;
+}
+
+@keyframes partyBounce {
+  from { transform: translateY(0) scaleY(1); }
+  to { transform: translateY(-9px) scaleY(1.03); }
+}
+
+/* Руки вверх — покачиваются, «wave» — машут шире */
+.party-arm {
+  animation: partyArmSway 1s ease-in-out infinite alternate both;
+}
+
+.party-arm-l { transform-origin: 100% 100%; }
+.party-arm-r { transform-origin: 0% 100%; }
+
+.party-arm.is-wave {
+  animation-name: partyArmWave;
+  animation-duration: 0.6s;
+}
+
+@keyframes partyArmSway {
+  from { transform: rotate(-8deg); }
+  to { transform: rotate(8deg); }
+}
+
+@keyframes partyArmWave {
+  from { transform: rotate(-22deg); }
+  to { transform: rotate(18deg); }
+}
+
+/* Прожекторы */
+.party-beam {
+  transform-origin: 50% 0%;
+  mix-blend-mode: normal;
+}
+
+.beam-a { animation: partyBeamSweep 4.2s ease-in-out infinite alternate; }
+.beam-b { animation: partyBeamSweep 3.6s ease-in-out -1.8s infinite alternate-reverse; }
+.beam-c {
+  opacity: 0.8;
+  animation: partyBeamCenter 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes partyBeamSweep {
+  from { transform: rotate(-24deg); }
+  to { transform: rotate(24deg); }
+}
+
+@keyframes partyBeamCenter {
+  0% { transform: rotate(-14deg); opacity: 0.35; }
+  100% { transform: rotate(14deg); opacity: 0.85; }
+}
+
+.party-floor-glow {
+  transform-origin: 50% 100%;
+  animation: partyFloorPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes partyFloorPulse {
+  from { opacity: 0.65; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1.04); }
+}
+
+/* Диско-шар: качание + «вращение» граней */
+.party-ball-swing {
+  transform-origin: 50% 0%;
+  animation: partyBallSwing 3s ease-in-out infinite alternate;
+}
+
+@keyframes partyBallSwing {
+  from { transform: rotate(-3deg); }
+  to { transform: rotate(3deg); }
+}
+
+.party-ball-facets {
+  animation: partyFacetsSpin 1.2s linear infinite;
+}
+
+@keyframes partyFacetsSpin {
+  from { transform: translateX(0); }
+  to { transform: translateX(8px); }
+}
+
+.party-sparkle {
+  transform-origin: 50% 50%;
+  animation: partySparkle 2.4s ease-in-out infinite both;
+}
+
+@keyframes partySparkle {
+  0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; }
+  40% { transform: scale(1.1) rotate(45deg); opacity: 1; }
+  60% { transform: scale(0.8) rotate(70deg); opacity: 0.8; }
+}
+
+/* Конфетти */
+.party-confetti {
+  transform-origin: 50% 50%;
+  animation-name: partyConfettiFall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+}
+
+@keyframes partyConfettiFall {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  8% { opacity: 1; }
+  50% { transform: translate(14px, 160px) rotate(260deg); }
+  85% { opacity: 1; }
+  100% { transform: translate(-6px, 300px) rotate(520deg); opacity: 0; }
+}
+
+/* Ноты всплывают */
+.party-note {
+  transform-origin: 50% 50%;
+  animation: partyNoteFloat 3.2s ease-out infinite both;
+}
+
+.note-2 { animation-delay: 1.1s; }
+.note-3 { animation-delay: 2.1s; }
+
+@keyframes partyNoteFloat {
+  0% { transform: translate(0, 20px) rotate(-10deg); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translate(12px, -90px) rotate(14deg); opacity: 0; }
+}

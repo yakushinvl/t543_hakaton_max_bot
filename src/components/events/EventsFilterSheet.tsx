@@ -3,6 +3,7 @@ import { getAllEventCategories } from '../../config/categories.config';
 import { triggerHaptic } from '../../lib/maxBridge';
 import { X, RotateCcw, Check, Calendar as CalendarIcon, Tag, CheckSquare, Square } from 'lucide-react';
 import './EventsScreen.css';
+import { EmojiIcon } from '../icons/EmojiIcon';
 
 interface EventsFilterSheetProps {
   isOpen: boolean;
@@ -255,7 +256,7 @@ export const EventsFilterSheet: React.FC<EventsFilterSheetProps> = ({
                   onSelectCategory('all');
                 }}
               >
-                <span>✨ Все темы</span>
+                <span><EmojiIcon e="✨" /> Все темы</span>
               </button>
 
               {/* Категории */}
@@ -272,7 +273,7 @@ export const EventsFilterSheet: React.FC<EventsFilterSheetProps> = ({
                     }}
                   >
                     <span>
-                      {cat.emoji} {cat.label}
+                      <EmojiIcon e={cat.emoji} /> {cat.label}
                     </span>
                   </button>
                 );

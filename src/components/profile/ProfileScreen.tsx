@@ -22,6 +22,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import './ProfileScreen.css';
+import { EmojiIcon } from '../icons/EmojiIcon';
 
 interface ProfileScreenProps {
   profile: UserProfile;
@@ -125,14 +126,14 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
           ) : (
             <div className="air-avatar-fallback">
               {profile.avatarEmoji ? (
-                <span className="air-avatar-emoji">{profile.avatarEmoji}</span>
+                <span className="air-avatar-emoji"><EmojiIcon e={profile.avatarEmoji} /></span>
               ) : (
                 <span className="air-avatar-letter">{profile.name ? profile.name[0].toUpperCase() : 'U'}</span>
               )}
             </div>
           )}
           <span className="air-avatar-badge" title={`Режим: ${currentPreset.name}`}>
-            {currentPreset.emoji}
+            <EmojiIcon e={currentPreset.emoji} />
           </span>
         </div>
 
@@ -155,7 +156,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             <span className="air-meta-item">{profile.ageGroup} лет</span>
             <span className="air-meta-separator">•</span>
             <span className="air-meta-item">
-              {genderOpt?.icon} {genderOpt?.label}
+              {genderOpt && <EmojiIcon e={genderOpt.icon} />} {genderOpt?.label}
             </span>
           </div>
         </div>
@@ -181,7 +182,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                 className={`air-persona-pill ${isActive ? 'active' : ''}`}
                 onClick={() => handleSelectPersona(preset.type)}
               >
-                <span className="air-persona-emoji">{preset.emoji}</span>
+                <span className="air-persona-emoji"><EmojiIcon e={preset.emoji} /></span>
                 <span className="air-persona-label">{preset.name}</span>
               </button>
             );
@@ -261,7 +262,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             if (!item) return null;
             return (
               <span key={id} className="air-interest-tag" style={{ '--tag-color': item.color } as React.CSSProperties}>
-                <span className="air-tag-emoji">{item.emoji}</span>
+                <span className="air-tag-emoji"><EmojiIcon e={item.emoji} /></span>
                 <span className="air-tag-text">{item.label}</span>
               </span>
             );
