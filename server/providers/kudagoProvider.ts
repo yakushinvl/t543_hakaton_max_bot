@@ -76,8 +76,6 @@ export class KudaGoProvider implements EventProvider {
           price: raw.price || 'Бесплатно / уточняйте',
           externalUrl: raw.site_url || `https://kudago.com/${citySlug}/event/${raw.id}/`,
           isCustom: false,
-          requiresRegistration: true,
-          registeredCount: Math.floor(Math.random() * 25) + 3,
         });
       }
 

@@ -84,8 +84,6 @@ export class EventAggregatorService {
       lat: c.lat,
       price: c.price,
       isCustom: true,
-      requiresRegistration: Boolean(c.requiresRegistration),
-      registeredCount: c.registeredCount || 1,
       authorId: c.authorId,
       authorName: c.authorName,
       tags: ['Сообщество MAX'],

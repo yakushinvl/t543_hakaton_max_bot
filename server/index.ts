@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { fetchKudaGoEventsForCity } from './kudago';
 import { db } from './db';
 import { validateMaxInitData, parseMaxUserFromInitData } from './maxAuth';
 import { analyzeWithLocalSemanticEngine, analyzeWithCloudLLM, type FlugerAIRequest } from './flugerAI';
@@ -203,8 +202,6 @@ app.post('/api/events', (req, res) => {
     price: price || 'Бесплатно / Организаторский сбор',
     isCustom: true,
     isPrivate: Boolean(isPrivate),
-    requiresRegistration: Boolean(requiresRegistration),
-    registeredCount: 1,
     authorId,
     authorName: authorName || 'Пользователь MAX',
     createdAt: new Date().toISOString(),
@@ -242,15 +239,6 @@ app.post('/api/chat/:eventId', (req, res) => {
 
   db.addChatMessage(eventId, message);
   res.status(201).json(message);
-});
-
-// Регистрация на мероприятие
-app.post('/api/events/:eventId/register', (req, res) => {
-  const { eventId } = req.params;
-  const regData = req.body;
-
-  const count = db.addRegistration(eventId, regData);
-  res.json({ success: true, registeredCount: count });
 });
 
 // Валидация MAX initData

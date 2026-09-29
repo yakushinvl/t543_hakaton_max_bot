@@ -122,7 +122,7 @@ export const EventChatFullScreen: React.FC<EventChatFullScreenProps> = ({
             <h2 className="chat-title truncate">{event.title}</h2>
             <div className="chat-status-subtitle">
               <span className="online-indicator-dot" />
-              <span>{event.registeredCount ? `${event.registeredCount} участников` : 'Чат события'}</span>
+              <span>Чат участников</span>
             </div>
           </div>
         </div>

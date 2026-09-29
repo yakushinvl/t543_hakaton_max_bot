@@ -33,5 +33,5 @@ export interface UserEventStatus {
   saved: boolean;
   wantToAttend: boolean;
   attended: boolean;
-  registered: boolean;
+  registered?: boolean;
 }

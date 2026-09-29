@@ -1,6 +1,5 @@
 import type { EventItem } from '../types/event';
 import type { ChatMessage, CreateEventPayload } from '../types/social';
-import type { RegistrationData } from '../types/user';
 import { getCachedEvents, setCachedEvents, loadStoredChatMessages, saveStoredChatMessage, saveStoredCustomEvent } from './storage';
 
 const API_BASE = '/api';
@@ -86,8 +85,6 @@ export async function createCustomEvent(payload: CreateEventPayload, author: { i
     ageRestricted: false,
     isCustom: true,
     isPrivate: payload.isPrivate,
-    requiresRegistration: payload.requiresRegistration,
-    registeredCount: 1,
     authorId: author.id,
     authorName: author.name,
   };
@@ -160,19 +157,6 @@ export async function postChatMessage(eventId: string, message: { userId: string
 
   saveStoredChatMessage(eventId, newMsg);
   return newMsg;
-}
-
-
-export async function registerForEventApi(eventId: string, registration: RegistrationData): Promise<{ success: boolean; registeredCount: number }> {
-  const res = await fetch(`${API_BASE}/events/${encodeURIComponent(eventId)}/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(registration),
-  });
-  if (!res.ok) {
-    throw new Error('Ошибка регистрации на мероприятие');
-  }
-  return res.json();
 }
 
 export interface UserCloudSyncResponse {

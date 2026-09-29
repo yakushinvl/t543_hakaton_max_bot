@@ -238,8 +238,8 @@ export function analyzeWithLocalSemanticEngine(
       // ignore
     }
 
-    // 7. Популярность кастомных событий
-    if (event.isCustom && event.registeredCount && event.registeredCount > 1) {
+    // 7. Пользовательские события сообщества
+    if (event.isCustom) {
       score += 10;
     }
 

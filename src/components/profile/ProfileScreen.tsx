@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import type { UserProfile, RegistrationData, ProfilePersonaType } from '../../types/user';
-import { getGenderOptions, PROFILE_PRESETS } from '../../types/user';
+import type { UserProfile } from '../../types/user';
+import { getGenderOptions } from '../../types/user';
 import { getInterestById } from '../../data/interests';
 import { CITIES } from '../../data/cities';
-import { RegistrationFormModal } from './RegistrationFormModal';
 import { EditProfileModal } from './EditProfileModal';
 import { AppSettingsModal } from './AppSettingsModal';
-import { switchOrCreatePersonaProfile } from '../../lib/storage';
 import { triggerHaptic, getMaxPlatform, getMaxUser } from '../../lib/maxBridge';
 
 import {
@@ -17,10 +15,7 @@ import {
   Calendar,
   Users,
   MapPin,
-  CheckCircle2,
-  FileText,
   ChevronRight,
-  Sparkles,
 } from 'lucide-react';
 import './ProfileScreen.css';
 import { EmojiIcon } from '../icons/EmojiIcon';
@@ -33,8 +28,6 @@ interface ProfileScreenProps {
   wantCount: number;
   attendedCount: number;
   customEventsCount: number;
-  showRegModalDirectly?: boolean;
-  onCloseRegModalDirectly?: () => void;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({
@@ -45,39 +38,12 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   wantCount,
   attendedCount,
   customEventsCount,
-  showRegModalDirectly,
-  onCloseRegModalDirectly,
 }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [showRegModal, setShowRegModal] = useState(showRegModalDirectly || false);
-
-  React.useEffect(() => {
-    if (showRegModalDirectly) {
-      setShowRegModal(true);
-    }
-  }, [showRegModalDirectly]);
 
   const cityName = CITIES.find((c) => c.slug === profile.citySlug)?.name || 'Город';
   const genderOpt = getGenderOptions(profile.ageGroup).find((g) => g.value === profile.gender);
-  const isRegFilled = Boolean(profile.registrationData?.fullName && profile.registrationData?.phone);
-
-  const activeProfileType: ProfilePersonaType = profile.profileType || 'personal';
-  const currentPreset = PROFILE_PRESETS.find((p) => p.type === activeProfileType) || PROFILE_PRESETS[0];
-
-  const handleSaveRegData = (data: RegistrationData) => {
-    onUpdateProfile({
-      ...profile,
-      registrationData: data,
-    });
-  };
-
-  const handleSelectPersona = (type: ProfilePersonaType) => {
-    if (type === activeProfileType) return;
-    triggerHaptic('selection');
-    const { profile: switchedProfile } = switchOrCreatePersonaProfile(type, profile);
-    onUpdateProfile(switchedProfile);
-  };
 
   return (
     <div className="air-profile-screen">
@@ -119,7 +85,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         </div>
       </header>
 
-      {/* 2. Hero-блок пользователя (Воздушный, без серых подложек) */}
+      {/* 2. Hero-блок пользователя (Воздушный, без лишних подложек) */}
       <section className="air-hero-section">
         <div className="air-avatar-container" onClick={() => setShowEditModal(true)}>
           {profile.avatarUrl ? (
@@ -133,19 +99,16 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
               )}
             </div>
           )}
-          <span className="air-avatar-badge" title={`Режим: ${currentPreset.name}`}>
-            <EmojiIcon e={currentPreset.emoji} />
-          </span>
         </div>
 
         <div className="air-hero-details">
           <h1 className="air-user-name">{profile.name}</h1>
-          
+
           {profile.statusText ? (
             <p className="air-user-status">{profile.statusText}</p>
           ) : (
             <p className="air-user-status air-status-placeholder">
-              {currentPreset.description}
+              Исследую события и город ✨
             </p>
           )}
 
@@ -169,43 +132,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         </div>
       </section>
 
-
-      {/* 3. Продуманные профили: Persona Switcher */}
-      <section className="air-persona-section">
-        <div className="air-section-title-row">
-          <div className="air-section-title-wrap">
-            <Sparkles size={15} className="air-sparkle-icon" />
-            <span className="air-section-title">Режим профиля</span>
-          </div>
-          <span className="air-persona-hint-badge">{currentPreset.badge}</span>
-        </div>
-
-        <div className="air-persona-pills">
-          {PROFILE_PRESETS.map((preset) => {
-            const isActive = preset.type === activeProfileType;
-            return (
-              <button
-                key={preset.type}
-                type="button"
-                className={`air-persona-pill ${isActive ? 'active' : ''}`}
-                onClick={() => handleSelectPersona(preset.type)}
-              >
-                <span className="air-persona-emoji"><EmojiIcon e={preset.emoji} /></span>
-                <span className="air-persona-label">{preset.name}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        <p className="air-persona-desc">
-          {activeProfileType === 'personal' && 'События и рекомендации по вашим персональным предпочтениям.'}
-          {activeProfileType === 'family' && 'Подборка для семейного отдыха: 0+, 6+, мастер-классы, цирк и парки.'}
-          {activeProfileType === 'friends' && 'Движ для компании: квизы, стендапы, вечеринки, бары и фестивали.'}
-          {activeProfileType === 'date' && 'Уютные места, живой джаз, вечерние выставки и камерные театры.'}
-        </p>
-      </section>
-
-      {/* 4. Воздушная статистика в один ряд (Air Stats Strip) */}
+      {/* 3. Воздушная статистика в один ряд (Air Stats Strip) */}
       <section className="air-stats-strip">
         <div className="air-stat-cell">
           <div className="air-stat-icon-wrap air-icon-red">
@@ -246,7 +173,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         </div>
       </section>
 
-      {/* 5. Интересы текущего профиля (Облако на чистом фоне) */}
+      {/* 4. Интересы пользователя (Облако на чистом фоне) */}
       <section className="air-interests-section">
         <div className="air-section-title-row">
           <span className="air-section-title">
@@ -278,43 +205,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         </div>
       </section>
 
-      {/* 6. Быстрая запись на события (Чистая строка Cell) */}
-      <section className="air-reg-section">
-        <div
-          className="air-reg-row"
-          onClick={() => {
-            triggerHaptic('light');
-            setShowRegModal(true);
-          }}
-        >
-          <div className="air-reg-left">
-            <div className="air-reg-icon-wrap">
-              <FileText size={18} />
-            </div>
-            <div className="air-reg-text-wrap">
-              <div className="air-reg-heading">Быстрая запись на события</div>
-              <div className="air-reg-subtext">
-                {isRegFilled
-                  ? `${profile.registrationData.fullName} • ${profile.registrationData.phone}`
-                  : 'Заполните ФИО и телефон для записи в 1 клик'}
-              </div>
-            </div>
-          </div>
-
-          <div className="air-reg-right">
-            {isRegFilled ? (
-              <span className="air-reg-status-done">
-                <CheckCircle2 size={14} /> Заполнено
-              </span>
-            ) : (
-              <span className="air-reg-status-action">
-                Заполнить <ChevronRight size={14} />
-              </span>
-            )}
-          </div>
-        </div>
-      </section>
-
       {/* Модалки */}
       {showEditModal && (
         <EditProfileModal
@@ -330,17 +220,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
           onUpdateProfile={onUpdateProfile}
           onRestartOnboarding={onRestartOnboarding}
           onClose={() => setShowSettingsModal(false)}
-        />
-      )}
-
-      {showRegModal && (
-        <RegistrationFormModal
-          initialData={profile.registrationData}
-          onSave={handleSaveRegData}
-          onClose={() => {
-            setShowRegModal(false);
-            onCloseRegModalDirectly?.();
-          }}
         />
       )}
     </div>

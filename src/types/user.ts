@@ -27,58 +27,11 @@ export interface RegistrationData {
 export type ThemeMode = 'auto' | 'light' | 'dark';
 export type FeedViewMode = 'compact' | 'full';
 
-export type ProfilePersonaType = 'personal' | 'family' | 'friends' | 'date' | 'custom';
-
-export interface ProfilePreset {
-  type: ProfilePersonaType;
-  name: string;
-  emoji: string;
-  description: string;
-  defaultInterests: string[];
-  badge: string;
-}
-
-export const PROFILE_PRESETS: ProfilePreset[] = [
-  {
-    type: 'personal',
-    name: 'Личный',
-    emoji: '👤',
-    description: 'События по вашим персональным вкусам и ритму',
-    defaultInterests: ['exhibition', 'concert', 'cinema', 'walk', 'standup'],
-    badge: 'Я',
-  },
-  {
-    type: 'family',
-    name: 'Семья',
-    emoji: '👨‍👩‍👧',
-    description: 'Совместный отдых с детьми, семейные парки и спектакли',
-    defaultInterests: ['kids', 'theater', 'outdoor', 'festival', 'science', 'quest'],
-    badge: 'Семья',
-  },
-  {
-    type: 'friends',
-    name: 'Компания',
-    emoji: '🎉',
-    description: 'Движ, квизы, стендапы, настолки, бары и фестивали',
-    defaultInterests: ['party', 'standup', 'quest', 'boardgames', 'nightlife', 'sport', 'food'],
-    badge: 'Друзья',
-  },
-  {
-    type: 'date',
-    name: 'Свидание',
-    emoji: '🍷',
-    description: 'Уютные места, живая музыка, выставки и романтика',
-    defaultInterests: ['wine', 'music_jazz', 'theater', 'exhibition', 'cinema', 'walk'],
-    badge: 'Для двоих',
-  },
-];
-
 export interface UserProfile {
   id?: string;
   name: string;
   avatarUrl?: string;
   avatarEmoji?: string;
-  profileType?: ProfilePersonaType;
   statusText?: string;
   bio?: string;
   ageGroup: AgeGroup;

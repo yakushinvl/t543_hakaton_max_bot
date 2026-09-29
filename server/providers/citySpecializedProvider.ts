@@ -229,8 +229,6 @@ export class CitySpecializedProvider implements EventProvider {
         price: item.price,
         externalUrl: item.externalUrl,
         isCustom: false,
-        requiresRegistration: true,
-        registeredCount: 15 + idx * 8,
         tags: [sourceName, 'Рекомендовано городом'],
       };
     });

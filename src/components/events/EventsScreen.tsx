@@ -29,7 +29,6 @@ interface EventsScreenProps {
   isWantToAttend: (eventId: string) => boolean;
   isAttended: (eventId: string) => boolean;
   onOpenChat: (eventId: string) => void;
-  onOpenProfileForRegistration: () => void;
 }
 
 interface ToastMessage {
@@ -54,7 +53,6 @@ export const EventsScreen: React.FC<EventsScreenProps> = ({
   isWantToAttend,
   isAttended,
   onOpenChat,
-  onOpenProfileForRegistration,
 }) => {
   // Главная вкладка: 'all' (Афиша) или 'my' (Мои события)
   const [mainTab, setMainTab] = useState<'all' | 'my'>('all');
@@ -639,7 +637,6 @@ export const EventsScreen: React.FC<EventsScreenProps> = ({
           onToggleSaved={() => onToggleStatus(selectedEvent.id, 'saved')}
           onToggleWant={() => onToggleStatus(selectedEvent.id, 'wantToAttend')}
           onOpenChat={onOpenChat}
-          onOpenProfileForRegistration={onOpenProfileForRegistration}
         />
       )}
     </div>

@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { EventItem } from '../../types/event';
 import type { UserProfile } from '../../types/user';
 import { getEventCategoryConfig } from '../../config/categories.config';
 import { triggerHaptic, shareEventToMax } from '../../lib/maxBridge';
-import { registerForEventApi } from '../../lib/api';
-import { Calendar, MapPin, Heart, Share2, MessageCircle, CheckCircle, Check, X, Sparkles, UserCheck, ExternalLink } from 'lucide-react';
+import { Calendar, MapPin, Heart, Share2, MessageCircle, Check, X, ExternalLink } from 'lucide-react';
 import './EventsScreen.css';
 import { EmojiIcon } from '../icons/EmojiIcon';
 
@@ -17,7 +16,6 @@ interface EventDetailModalProps {
   onToggleSaved: () => void;
   onToggleWant: () => void;
   onOpenChat: (eventId: string) => void;
-  onOpenProfileForRegistration: () => void;
 }
 
 export const EventDetailModal: React.FC<EventDetailModalProps> = ({
@@ -29,35 +27,8 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
   onToggleSaved,
   onToggleWant,
   onOpenChat,
-  onOpenProfileForRegistration,
 }) => {
-  const [registered, setRegistered] = useState(false);
-  const [registering, setRegistering] = useState(false);
-  const [registeredCount, setRegisteredCount] = useState(event.registeredCount || 5);
   const categoryConfig = getEventCategoryConfig(event.category);
-
-  const handleRegister = async () => {
-    triggerHaptic('medium');
-    if (!profile?.registrationData?.phone || !profile?.registrationData?.fullName) {
-      if (confirm('Для регистрации необходимо заполнить контактные данные (ФИО и телефон) в профиле. Перейти в профиль?')) {
-        onClose();
-        onOpenProfileForRegistration();
-      }
-      return;
-    }
-
-    setRegistering(true);
-    try {
-      const res = await registerForEventApi(event.id, profile.registrationData);
-      triggerHaptic('success');
-      setRegistered(true);
-      setRegisteredCount(res.registeredCount);
-    } catch {
-      alert('Ошибка при регистрации. Попробуйте еще раз.');
-    } finally {
-      setRegistering(false);
-    }
-  };
 
   const handleShare = () => {
     triggerHaptic('light');
@@ -124,34 +95,6 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
             <p className="event-modal-description">{event.description}</p>
           </div>
 
-          {/* Блок регистрации на мероприятие */}
-          {event.requiresRegistration && (
-            <div className="registration-box">
-              <div className="reg-info">
-                <UserCheck size={22} className="reg-icon" />
-                <div>
-                  <h4>Регистрация участников</h4>
-                  <p>Записалось: <strong>{registeredCount} человек</strong></p>
-                </div>
-              </div>
-
-              {registered ? (
-                <div className="registered-success">
-                  <CheckCircle size={20} color="#4bb34b" />
-                  <span>Вы успешно зарегистрированы! Ждём вас на встрече.</span>
-                </div>
-              ) : (
-                <button
-                  className="btn-register"
-                  onClick={handleRegister}
-                  disabled={registering}
-                >
-                  <Sparkles size={16} />
-                  <span>{registering ? 'Записываем...' : 'Записаться на событие'}</span>
-                </button>
-              )}
-            </div>
-          )}
 
           {/* Внешняя ссылка на первоисточник / запись / подробности */}
           {event.externalUrl && (

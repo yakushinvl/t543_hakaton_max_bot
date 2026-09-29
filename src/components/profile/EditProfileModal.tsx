@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import type { UserProfile, AgeGroup, Gender, ProfilePersonaType } from '../../types/user';
-import { getGenderOptions, PROFILE_PRESETS } from '../../types/user';
+import type { UserProfile, AgeGroup, Gender } from '../../types/user';
+import { getGenderOptions } from '../../types/user';
 import { CITIES } from '../../data/cities';
 import { AppleWatchGrid } from '../onboarding/AppleWatchGrid';
 import { triggerHaptic } from '../../lib/maxBridge';
@@ -16,7 +16,7 @@ interface EditProfileModalProps {
 
 const AGE_GROUPS: AgeGroup[] = ['6-8', '9-11', '12-14', '15-17', '18-24', '25-34', '35-49', '50-59', '60+'];
 
-const POPULAR_EMOJIS = ['👤', '🌟', '🎨', '🚀', '🎸', '👨‍👩‍👧', '🎉', '🍷', '🌿', '🕶️', '⚡', '☕'];
+const POPULAR_EMOJIS = ['👤', '🌟', '🎨', '🚀', '🎸', '🌿', '🕶️', '⚡', '☕', '🔥', '✨', '🎧'];
 
 export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   profile,
@@ -25,7 +25,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 }) => {
   const [name, setName] = useState(profile.name || '');
   const [statusText, setStatusText] = useState(profile.statusText || '');
-  const [profileType, setProfileType] = useState<ProfilePersonaType>(profile.profileType || 'personal');
   const [citySlug, setCitySlug] = useState(profile.citySlug || 'msk');
   const [ageGroup, setAgeGroup] = useState<AgeGroup>(profile.ageGroup);
   const [gender, setGender] = useState<Gender>(profile.gender);
@@ -38,18 +37,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     const options = getGenderOptions(age);
     if (!options.some((o) => o.value === gender)) {
       setGender(options[0].value);
-    }
-  };
-
-  const handlePresetSelect = (presetType: ProfilePersonaType) => {
-    triggerHaptic('selection');
-    setProfileType(presetType);
-    const preset = PROFILE_PRESETS.find((p) => p.type === presetType);
-    if (preset) {
-      setAvatarEmoji(preset.emoji);
-      if (!statusText || PROFILE_PRESETS.some((p) => p.description === statusText)) {
-        setStatusText(preset.description);
-      }
     }
   };
 
@@ -66,7 +53,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       ...profile,
       name: name.trim() || 'Пользователь',
       statusText: statusText.trim(),
-      profileType,
       citySlug,
       ageGroup,
       gender,
@@ -82,7 +68,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         <div className="air-modal-header">
           <div className="air-modal-title-group">
             <h3 className="air-modal-title">Настройка профиля</h3>
-            <p className="air-modal-subtitle">Имя, роль, аватар и параметры подбора событий</p>
+            <p className="air-modal-subtitle">Имя, статус, аватар и параметры подбора событий</p>
           </div>
           <button className="air-modal-close" onClick={onClose} aria-label="Закрыть">
             <X size={20} />
@@ -90,24 +76,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         </div>
 
         <form onSubmit={handleSave} className="air-edit-form">
-          {/* Режим профиля */}
-          <div className="air-form-group">
-            <label className="air-form-label">Тип профиля (роль)</label>
-            <div className="air-role-pills">
-              {PROFILE_PRESETS.map((preset) => (
-                <button
-                  key={preset.type}
-                  type="button"
-                  className={`air-role-pill ${profileType === preset.type ? 'active' : ''}`}
-                  onClick={() => handlePresetSelect(preset.type)}
-                >
-                  <span className="air-role-emoji"><EmojiIcon e={preset.emoji} /></span>
-                  <span className="air-role-name">{preset.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Имя и статус */}
           <div className="air-form-group">
             <label className="air-form-label">Имя в профиле</label>
@@ -213,7 +181,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
           {/* Сетка интересов */}
           <div className="air-form-group">
             <div className="air-form-group-head">
-              <label className="air-form-label">Интересы для этого профиля</label>
+              <label className="air-form-label">Интересы для подбора событий</label>
               <span className="air-selected-badge">{interests.length} выбрано</span>
             </div>
             <AppleWatchGrid

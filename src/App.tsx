@@ -38,7 +38,6 @@ export default function App() {
 
   // Навигационные ссылки между экранами
   const [chatEventId, setChatEventId] = useState<string | null>(null);
-  const [showRegModalInProfile, setShowRegModalInProfile] = useState(false);
 
   // Инициализация темы и палитры
   useEffect(() => {
@@ -203,12 +202,6 @@ export default function App() {
     setActiveTab('social');
   };
 
-  // Переход в профиль для заполнения формы регистрации
-  const handleOpenProfileForRegistration = () => {
-    setShowRegModalInProfile(true);
-    setActiveTab('profile');
-  };
-
   // Если онбординг ещё не пройден
   if (!profile || !profile.onboardingCompleted) {
     return (
@@ -254,7 +247,6 @@ export default function App() {
           isWantToAttend={isWantToAttend}
           isAttended={isAttended}
           onOpenChat={handleOpenChat}
-          onOpenProfileForRegistration={handleOpenProfileForRegistration}
         />
       )}
 
@@ -295,8 +287,6 @@ export default function App() {
           wantCount={stats.want}
           attendedCount={stats.attended}
           customEventsCount={stats.customCount}
-          showRegModalDirectly={showRegModalInProfile}
-          onCloseRegModalDirectly={() => setShowRegModalInProfile(false)}
         />
       )}
 
@@ -311,7 +301,6 @@ export default function App() {
           onToggleSaved={() => handleToggleStatus(selectedEvent.id, 'saved')}
           onToggleWant={() => handleToggleStatus(selectedEvent.id, 'wantToAttend')}
           onOpenChat={handleOpenChat}
-          onOpenProfileForRegistration={handleOpenProfileForRegistration}
         />
       )}
 

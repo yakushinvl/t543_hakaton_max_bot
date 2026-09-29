@@ -1159,49 +1159,6 @@
   white-space: pre-line;
 }
 
-/* Регистрация */
-.registration-box {
-  background: var(--max-primary-light);
-  border: 1px solid rgba(0, 119, 255, 0.2);
-  border-radius: var(--max-radius);
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.reg-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.reg-icon {
-  color: var(--max-primary);
-}
-
-.btn-register {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: var(--max-primary);
-  color: #ffffff;
-  padding: 12px;
-  border-radius: var(--max-radius-sm);
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.registered-success {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #27ae60;
-  font-weight: 600;
-  font-size: 14px;
-}
 
 .event-chat-prompt {
   margin-bottom: 20px;

@@ -1,5 +1,4 @@
-import type { UserProfile, ProfilePersonaType } from '../types/user';
-import { PROFILE_PRESETS } from '../types/user';
+import type { UserProfile } from '../types/user';
 import type { EventItem, UserEventStatus } from '../types/event';
 import {
   getMaxUserId,
@@ -10,8 +9,6 @@ import {
 } from './maxBridge';
 
 const PROFILE_KEY = 'max_event_app_profile_v2';
-const PROFILES_LIST_KEY = 'max_event_app_profiles_v3';
-const ACTIVE_PROFILE_ID_KEY = 'max_event_app_active_id_v3';
 const APP_SETTINGS_KEY = 'max_event_app_settings_v1';
 const EVENT_STATUSES_KEY = 'max_event_app_statuses_v2';
 const CACHED_EVENTS_PREFIX = 'max_cached_events_v2_';
@@ -110,41 +107,7 @@ export function saveAppSettings(settings: Partial<AppSettings>): AppSettings {
   }
 }
 
-export function loadStoredProfiles(): UserProfile[] {
-  try {
-    const raw = getScopedItem(PROFILES_LIST_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
-    }
-  } catch {}
-
-  // Fallback к старому одиночному профилю
-  const single = loadStoredProfileSingle();
-  if (single) {
-    const baseProfile: UserProfile = {
-      ...single,
-      id: single.id ? String(single.id) : 'profile_personal',
-      profileType: single.profileType || 'personal',
-    };
-    saveStoredProfilesList([baseProfile]);
-    return [baseProfile];
-  }
-  return [];
-}
-
-export function saveStoredProfilesList(profiles: UserProfile[]): void {
-  try {
-    setScopedItem(PROFILES_LIST_KEY, JSON.stringify(profiles));
-    scheduleCloudSync();
-  } catch (err) {
-    console.error('Failed to save profiles list:', err);
-  }
-}
-
-function loadStoredProfileSingle(): UserProfile | null {
+export function loadStoredProfile(): UserProfile | null {
   try {
     const raw = getScopedItem(PROFILE_KEY);
     if (!raw) return null;
@@ -154,80 +117,13 @@ function loadStoredProfileSingle(): UserProfile | null {
   }
 }
 
-export function loadStoredProfile(): UserProfile | null {
-  const activeId = getScopedItem(ACTIVE_PROFILE_ID_KEY);
-  const profiles = loadStoredProfiles();
-  if (profiles.length > 0) {
-    if (activeId) {
-      const found = profiles.find((p) => p.id === activeId);
-      if (found) return found;
-    }
-    return profiles[0];
-  }
-  return loadStoredProfileSingle();
-}
-
 export function saveStoredProfile(profile: UserProfile): void {
   try {
-    // Гарантируем наличие id
-    const profileWithId: UserProfile = {
-      ...profile,
-      id: profile.id ? String(profile.id) : 'profile_personal',
-      profileType: profile.profileType || 'personal',
-    };
-
-    setScopedItem(PROFILE_KEY, JSON.stringify(profileWithId));
-    setScopedItem(ACTIVE_PROFILE_ID_KEY, profileWithId.id!);
-
-    const profiles = loadStoredProfiles();
-    const existingIndex = profiles.findIndex((p) => p.id === profileWithId.id);
-    let updatedList: UserProfile[];
-    if (existingIndex >= 0) {
-      updatedList = [...profiles];
-      updatedList[existingIndex] = profileWithId;
-    } else {
-      updatedList = [...profiles, profileWithId];
-    }
-    setScopedItem(PROFILES_LIST_KEY, JSON.stringify(updatedList));
+    setScopedItem(PROFILE_KEY, JSON.stringify(profile));
     scheduleCloudSync();
   } catch (err) {
     console.error('Failed to save profile:', err);
   }
-}
-
-/**
- * Создать или переключиться на профиль определенной персоны (Личный, Семья, Компания, Свидание)
- */
-export function switchOrCreatePersonaProfile(
-  type: ProfilePersonaType,
-  baseProfile: UserProfile
-): { profile: UserProfile; profiles: UserProfile[] } {
-  const profiles = loadStoredProfiles();
-  const existing = profiles.find((p) => p.profileType === type);
-
-  if (existing) {
-    saveStoredProfile(existing);
-    return { profile: existing, profiles };
-  }
-
-  const preset = PROFILE_PRESETS.find((p) => p.type === type) || PROFILE_PRESETS[0];
-  const newProfileId = `profile_${type}_${Date.now()}`;
-
-  const newProfile: UserProfile = {
-    ...baseProfile,
-    id: newProfileId,
-    name: type === 'personal' ? baseProfile.name : `${baseProfile.name} (${preset.name})`,
-    profileType: type,
-    avatarEmoji: preset.emoji,
-    statusText: preset.description,
-    interests: preset.defaultInterests.length > 0 ? preset.defaultInterests : baseProfile.interests,
-  };
-
-  const updatedProfiles = [...profiles, newProfile];
-  saveStoredProfilesList(updatedProfiles);
-  saveStoredProfile(newProfile);
-
-  return { profile: newProfile, profiles: updatedProfiles };
 }
 
 export function loadEventStatuses(): Record<string, Partial<UserEventStatus>> {
@@ -246,7 +142,7 @@ export function saveEventStatus(
 ): Record<string, Partial<UserEventStatus>> {
   const statuses = loadEventStatuses();
   if (!statuses[eventId]) {
-    statuses[eventId] = { saved: false, wantToAttend: false, attended: false, registered: false };
+    statuses[eventId] = { saved: false, wantToAttend: false, attended: false };
   }
   statuses[eventId][key] = value;
   try {
@@ -390,8 +286,6 @@ export async function syncCurrentUserDataToCloud(): Promise<boolean> {
 
   // Собираем полное состояние аккаунта
   const profile = loadStoredProfile();
-  const profiles = loadStoredProfiles();
-  const activeProfileId = getScopedItem(ACTIVE_PROFILE_ID_KEY);
   const settings = loadAppSettings();
   const eventStatuses = loadEventStatuses();
   const customEvents = loadStoredCustomEvents();
@@ -399,8 +293,6 @@ export async function syncCurrentUserDataToCloud(): Promise<boolean> {
 
   const payload = {
     profile,
-    profiles,
-    activeProfileId,
     settings,
     eventStatuses,
     customEvents,
@@ -517,17 +409,7 @@ function applyCloudDataToLocal(cloudData: any): void {
     setScopedItem(PROFILE_KEY, JSON.stringify(cloudData.profile), true);
   }
 
-  // 2. Персоны
-  if (Array.isArray(cloudData.profiles) && cloudData.profiles.length > 0) {
-    setScopedItem(PROFILES_LIST_KEY, JSON.stringify(cloudData.profiles), true);
-  }
-
-  // 3. Активный ID персоны
-  if (cloudData.activeProfileId) {
-    setScopedItem(ACTIVE_PROFILE_ID_KEY, cloudData.activeProfileId, true);
-  }
-
-  // 4. Настройки
+  // 2. Настройки
   if (cloudData.settings) {
     setScopedItem(APP_SETTINGS_KEY, JSON.stringify(cloudData.settings), true);
   }
