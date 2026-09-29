@@ -486,6 +486,15 @@ function getLocationViaLocationManager(
 
     const invokeGetLocation = () => {
       try {
+        if (typeof lm.isLocationAvailable === 'boolean' && !lm.isLocationAvailable) {
+          if (!settled) {
+            settled = true;
+            clearTimeout(timer);
+            resolve(null);
+          }
+          return;
+        }
+
         const res = lm.getLocation(onLocation);
         if (res instanceof Promise) {
           res.then(onLocation).catch(() => {
@@ -496,7 +505,7 @@ function getLocationViaLocationManager(
             }
           });
         }
-      } catch (err) {
+      } catch {
         if (!settled) {
           settled = true;
           clearTimeout(timer);
@@ -507,18 +516,9 @@ function getLocationViaLocationManager(
 
     try {
       if (!lm.isInited && typeof lm.init === 'function') {
-        const initRes = lm.init(() => {
+        lm.init(() => {
           invokeGetLocation();
         });
-        if (initRes instanceof Promise) {
-          initRes.then(invokeGetLocation).catch(() => {
-            if (!settled) {
-              settled = true;
-              clearTimeout(timer);
-              resolve(null);
-            }
-          });
-        }
       } else {
         invokeGetLocation();
       }
@@ -590,64 +590,10 @@ function getLocationViaDirectMethod(
 }
 
 /**
- * Получение геолокации через события postEvent('web_app_request_location')
- */
-function getLocationViaPostEvent(
-  webApp: any,
-  timeoutMs: number
-): Promise<MaxBridgeLocationResult | null> {
-  return new Promise((resolve) => {
-    let settled = false;
-    const timer = setTimeout(() => {
-      if (!settled) {
-        settled = true;
-        cleanup();
-        resolve(null);
-      }
-    }, timeoutMs);
-
-    const onLocationReceived = (data: any) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      cleanup();
-      const lat = data?.latitude ?? data?.lat;
-      const lon = data?.longitude ?? data?.lon ?? data?.lng;
-      if (typeof lat === 'number' && typeof lon === 'number' && !isNaN(lat) && !isNaN(lon)) {
-        resolve({
-          lat,
-          lon,
-          accuracy: data?.horizontal_accuracy ?? data?.accuracy,
-        });
-      } else {
-        resolve(null);
-      }
-    };
-
-    const cleanup = () => {
-      try {
-        webApp.offEvent?.('location_checked', onLocationReceived);
-        webApp.offEvent?.('location_received', onLocationReceived);
-      } catch {}
-    };
-
-    try {
-      webApp.onEvent('location_checked', onLocationReceived);
-      webApp.onEvent('location_received', onLocationReceived);
-      webApp.postEvent('web_app_request_location');
-    } catch {
-      cleanup();
-      resolve(null);
-    }
-  });
-}
-
-/**
  * Запрос геолокации пользователя через MAX Bridge:
  * 1. Проверяет наличие window.WebApp.LocationManager (Telegram / MAX Mini App 8.0+ standard)
  * 2. Проверяет альтернативные методы bridge: requestLocation, getLocation (в WebApp или window.max)
- * 3. Поддерживает событийно-ориентированный postEvent('web_app_request_location')
- * 4. Возвращает координаты { lat, lon, accuracy } или null, если bridge недоступен / не ответил
+ * 3. Возвращает координаты { lat, lon, accuracy } или null, если bridge недоступен / не ответил
  */
 export async function requestLocationViaMaxBridge(
   timeoutMs = 6000
@@ -698,14 +644,6 @@ export async function requestLocationViaMaxBridge(
         if (loc) return loc;
       } catch {}
     }
-  }
-
-  // 4. Пробуем нативный postEvent
-  if (webApp && typeof webApp.postEvent === 'function' && typeof webApp.onEvent === 'function') {
-    try {
-      const loc = await getLocationViaPostEvent(webApp, timeoutMs);
-      if (loc) return loc;
-    } catch {}
   }
 
   return null;
