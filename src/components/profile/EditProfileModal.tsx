@@ -14,7 +14,7 @@ interface EditProfileModalProps {
   onClose: () => void;
 }
 
-const AGE_GROUPS: AgeGroup[] = ['6-11', '12-15', '16-21', '22-29', '30-44', '45-59', '60+'];
+const AGE_GROUPS: AgeGroup[] = ['6-8', '9-11', '12-14', '15-17', '18-24', '25-34', '35-49', '50-59', '60+'];
 
 const POPULAR_EMOJIS = ['👤', '🌟', '🎨', '🚀', '🎸', '👨‍👩‍👧', '🎉', '🍷', '🌿', '🕶️', '⚡', '☕'];
 

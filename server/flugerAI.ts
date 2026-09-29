@@ -157,7 +157,7 @@ export function analyzeWithLocalSemanticEngine(
 
   const { mood = 'familiar', cityCategory = '', company = 'friends', format = '', customText = '' } = answers;
   const userInterests = new Set(profile?.interests || []);
-  const isMinor = profile?.ageGroup === '6-11' || profile?.ageGroup === '12-15';
+  const isMinor = profile?.ageGroup === '6-8' || profile?.ageGroup === '9-11' || profile?.ageGroup === '12-14' || profile?.ageGroup === '15-17';
 
   const scored: Array<{
     event: EventItem;
@@ -170,7 +170,7 @@ export function analyzeWithLocalSemanticEngine(
     // 1. Строгие возрастные и семейные фильтры
     if (isMinor && event.ageRestricted) continue;
     if (company === 'family' && event.ageRestricted) continue;
-    if (profile?.ageGroup === '6-11' && (event.minAge || 0) > 11) continue;
+    if ((profile?.ageGroup === '6-8' || profile?.ageGroup === '9-11') && (event.minAge || 0) > 11) continue;
 
     let score = 30;
     const reasons: string[] = [];

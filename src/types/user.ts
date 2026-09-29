@@ -1,10 +1,12 @@
 export type AgeGroup =
-  | '6-11'
-  | '12-15'
-  | '16-21'
-  | '22-29'
-  | '30-44'
-  | '45-59'
+  | '6-8'
+  | '9-11'
+  | '12-14'
+  | '15-17'
+  | '18-24'
+  | '25-34'
+  | '35-49'
+  | '50-59'
   | '60+';
 
 export type Gender =
@@ -90,13 +92,13 @@ export interface UserProfile {
 }
 
 export function getGenderOptions(ageGroup: AgeGroup): { value: Gender; label: string; icon: string }[] {
-  if (ageGroup === '6-11' || ageGroup === '12-15') {
+  if (ageGroup === '6-8' || ageGroup === '9-11' || ageGroup === '12-14' || ageGroup === '15-17') {
     return [
       { value: 'boy', label: 'Мальчик', icon: '👦' },
       { value: 'girl', label: 'Девочка', icon: '👧' },
     ];
   }
-  if (ageGroup === '16-21' || ageGroup === '22-29') {
+  if (ageGroup === '18-24' || ageGroup === '25-34') {
     return [
       { value: 'young_man', label: 'Парень', icon: '🧑' },
       { value: 'young_woman', label: 'Девушка', icon: '👩' },

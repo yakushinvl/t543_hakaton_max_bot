@@ -19,7 +19,7 @@ interface OnboardingModalProps {
   initialProfile?: UserProfile | null;
 }
 
-const AGE_GROUPS: AgeGroup[] = ['6-11', '12-15', '16-21', '22-29', '30-44', '45-59', '60+'];
+const AGE_GROUPS: AgeGroup[] = ['6-8', '9-11', '12-14', '15-17', '18-24', '25-34', '35-49', '50-59', '60+'];
 
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   onComplete,
@@ -32,7 +32,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   // Данные профиля
   const [name, setName] = useState('');
-  const [ageGroup, setAgeGroup] = useState<AgeGroup>('22-29');
+  const [ageGroup, setAgeGroup] = useState<AgeGroup>('18-24');
   const [gender, setGender] = useState<Gender>('young_man');
   const [interests, setInterests] = useState<string[]>(['concert', 'exhibition', 'food', 'walk']);
   const citySlug = DEFAULT_CITY.slug;
@@ -340,22 +340,24 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 Расскажи, сколько тебе лет
               </h1>
 
-              <div className="age-framed-group anim-line anim-delay-2">
-                {AGE_GROUPS.map((age) => (
-                  <button
-                    key={age}
-                    type="button"
-                    className={`age-framed-button ${ageGroup === age ? 'selected' : ''}`}
-                    onClick={() => handleAgeSelect(age)}
-                  >
-                    <span className="age-framed-val">{age}</span>
-                    {ageGroup === age && (
-                      <div className="age-framed-check">
-                        <Check size={12} strokeWidth={3} />
-                      </div>
-                    )}
-                  </button>
-                ))}
+              <div className="anim-line anim-delay-2" style={{ width: '100%', display: 'block' }}>
+                <div className="age-framed-group">
+                  {AGE_GROUPS.map((age) => (
+                    <button
+                      key={age}
+                      type="button"
+                      className={`age-framed-button ${ageGroup === age ? 'selected' : ''}`}
+                      onClick={() => handleAgeSelect(age)}
+                    >
+                      <span className="age-framed-val">{age}</span>
+                      {ageGroup === age && (
+                        <div className="age-framed-check">
+                          <Check size={12} strokeWidth={3} />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
