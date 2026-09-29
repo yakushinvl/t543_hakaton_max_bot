@@ -24,9 +24,9 @@ export const ReferralLinkModal: React.FC<ReferralLinkModalProps> = ({
   const [copiedMessage, setCopiedMessage] = useState(false);
   const [stats, setStats] = useState(() => loadReferralStats(event.id));
 
-  // Персональная реферальная ссылка участника/организатора
+  // Персональная реферальная ссылка участника/организатора в чат-бот MAX
   const authorTag = profile?.id || 'me';
-  const referralUrl = `https://vane.yakuhost.ru/?startapp=ref_${authorTag}_event_${event.id}`;
+  const referralUrl = `https://max.ru/t543_hakaton_max_bot?start=ref_${authorTag}_event_${event.id}`;
   const referralCode = `REF-${event.id.replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase() || 'MAX777'}`;
 
   const formattedDate = new Date(event.date).toLocaleDateString('ru-RU', {

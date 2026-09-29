@@ -1,6 +1,13 @@
 import type { EventItem } from '../types/event';
 import type { ChatMessage, CreateEventPayload } from '../types/social';
-import { getCachedEvents, setCachedEvents, loadStoredChatMessages, saveStoredChatMessage, saveStoredCustomEvent } from './storage';
+import {
+  getCachedEvents,
+  setCachedEvents,
+  loadStoredChatMessages,
+  saveStoredChatMessage,
+  saveStoredCustomEvent,
+  loadStoredCustomEvents,
+} from './storage';
 
 const API_BASE = '/api';
 
@@ -66,6 +73,30 @@ export async function fetchEvents(optionsOrCitySlug?: string | FetchEventsOption
   }
 
   return [];
+}
+
+/**
+ * Загрузка конкретного мероприятия по ID (для реферальных ссылок и прямых переходов)
+ */
+export async function fetchEventById(eventId: string): Promise<EventItem | null> {
+  try {
+    const res = await fetch(`${API_BASE}/events/${encodeURIComponent(eventId)}`, {
+      headers: { 'Accept': 'application/json' },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.item) {
+        return data.item;
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to fetch event by id from API:', err);
+  }
+
+  // Fallback к локальным кастомным событиям
+  const localCustom = loadStoredCustomEvents();
+  const found = localCustom.find((e: EventItem) => e.id === eventId);
+  return found || null;
 }
 
 export async function createCustomEvent(payload: CreateEventPayload, author: { id: string | number; name: string }): Promise<EventItem> {

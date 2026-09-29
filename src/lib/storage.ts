@@ -237,6 +237,24 @@ export function recordReferralShare(eventId: string): { clicks: number; joins: n
   return updated;
 }
 
+export function recordReferralJoin(eventId: string): { clicks: number; joins: number } {
+  const current = loadReferralStats(eventId);
+  // Защита от дублирования подсчета при повторном открытии/обновлении
+  const joinedKey = `joined_ref_${eventId}`;
+  if (typeof window !== 'undefined' && localStorage.getItem(joinedKey)) {
+    return current;
+  }
+  const updated = { clicks: current.clicks, joins: current.joins + 1 };
+  try {
+    setScopedItem(`${REFERRALS_PREFIX}${eventId}`, JSON.stringify(updated));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(joinedKey, '1');
+    }
+    scheduleCloudSync();
+  } catch {}
+  return updated;
+}
+
 function loadAllReferralStats(): Record<string, { clicks: number; joins: number }> {
   const result: Record<string, { clicks: number; joins: number }> = {};
   if (typeof window === 'undefined' || !window.localStorage) return result;

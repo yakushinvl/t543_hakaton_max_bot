@@ -74,6 +74,60 @@ export function getMaxPlatform(): 'ios' | 'android' | 'desktop' | 'web' {
   return 'web';
 }
 
+/**
+ * Получение стартового payload из MAX Bridge (initDataUnsafe.start_param) или query/hash URL
+ */
+export function getMaxStartParam(): string | null {
+  const webApp = getWebApp();
+  if (webApp?.initDataUnsafe?.start_param) {
+    return webApp.initDataUnsafe.start_param;
+  }
+  if (typeof window !== 'undefined') {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const q =
+        urlParams.get('startapp') ||
+        urlParams.get('start') ||
+        urlParams.get('start_param') ||
+        urlParams.get('tgWebAppStartParam');
+      if (q) return q;
+
+      if (window.location.hash) {
+        const hashClean = window.location.hash.replace(/^#/, '');
+        const hashParams = new URLSearchParams(hashClean);
+        const h =
+          hashParams.get('startapp') ||
+          hashParams.get('start') ||
+          hashParams.get('start_param') ||
+          hashParams.get('tgWebAppStartParam');
+        if (h) return h;
+      }
+    } catch {}
+  }
+  return null;
+}
+
+/**
+ * Извлечение идентификатора события из стартового параметра диплинка бота/приложения
+ * Поддерживаемые форматы:
+ * - ref_me_event_123
+ * - event_123
+ * - ref_author_event_user-171000-abcd
+ * - ref_me_123
+ */
+export function parseEventIdFromStartParam(param: string | null | undefined): string | null {
+  if (!param) return null;
+  const matchEvent = param.match(/(?:^|_)event_(.+)$/i);
+  if (matchEvent && matchEvent[1]) {
+    return matchEvent[1];
+  }
+  const matchRef = param.match(/^ref_[^_]+_(.+)$/i);
+  if (matchRef && matchRef[1]) {
+    return matchRef[1];
+  }
+  return null;
+}
+
 let isDeviceStorageAvailable: boolean | null = null;
 let isCloudStorageAvailable: boolean | null = null;
 
@@ -435,8 +489,8 @@ export function shareEventToMax(title: string, url: string): void {
   const text = `Пойдём на мероприятие: "${title}"! Подробнее: ${url}`;
   
   if (webApp && typeof webApp.openLink === 'function') {
-    // Если есть max.ru share
-    webApp.openLink(`https://max.ru/share?text=${encodeURIComponent(text)}`);
+    // Согласно документации docs/max-dev/docs/webapps/introduction.md: https://max.ru/:share?text=<текст>
+    webApp.openLink(`https://max.ru/:share?text=${encodeURIComponent(text)}`);
   } else if (navigator.share) {
     navigator.share({ title, text, url }).catch(() => {});
   } else if (navigator.clipboard) {

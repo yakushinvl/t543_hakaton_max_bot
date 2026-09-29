@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { db } from './db';
 import { validateMaxInitData, parseMaxUserFromInitData } from './maxAuth';
 import { analyzeWithLocalSemanticEngine, analyzeWithCloudLLM, type FlugerAIRequest } from './flugerAI';
+import { startBot, handleWebhookUpdate } from './bot';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -131,6 +132,34 @@ app.get('/api/events', async (req, res) => {
     });
   } catch (err: any) {
     console.error('API /api/events error:', err);
+    res.status(500).json({ success: false, error: err.message || 'Server error' });
+  }
+});
+
+// Получение одного мероприятия по ID (для реферальных ссылок, чат-бота и шеринга)
+app.get('/api/events/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Поиск в пользовательских мероприятиях БД
+    const customEvents = db.getCustomEvents();
+    const foundCustom = customEvents.find((e) => e.id === id);
+    if (foundCustom) {
+      return res.json({ success: true, item: foundCustom });
+    }
+
+    // 2. Поиск в агрегированных мероприятиях ключевых городов
+    for (const city of ['kzn', 'msk', 'spb']) {
+      const cityEvents = await eventAggregator.getEvents(city);
+      const found = cityEvents.find((e) => e.id === id);
+      if (found) {
+        return res.json({ success: true, item: found });
+      }
+    }
+
+    res.status(404).json({ success: false, error: 'Event not found' });
+  } catch (err: any) {
+    console.error('API /api/events/:id error:', err);
     res.status(500).json({ success: false, error: err.message || 'Server error' });
   }
 });
@@ -339,6 +368,16 @@ app.post('/api/user/sync', (req, res) => {
   }
 });
 
+// Эндпоинт для приема Webhook обновлений от платформы MAX
+app.post('/api/bot/webhook', async (req, res) => {
+  try {
+    await handleWebhookUpdate(req.body);
+    res.json({ ok: true });
+  } catch (err: any) {
+    console.error('Webhook error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Статика в продакшене (dist)
 const distPath = path.join(__dirname, '..', 'dist');
@@ -353,4 +392,8 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  // Запуск MAX чат-бота
+  startBot().catch((err) => {
+    console.warn('Bot initialization warning:', err?.message || err);
+  });
 });

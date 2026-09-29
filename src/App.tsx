@@ -10,8 +10,15 @@ import { EventMap } from './components/map/EventMap';
 import { SocialScreen } from './components/social/SocialScreen';
 import { ProfileScreen } from './components/profile/ProfileScreen';
 import { EventDetailModal } from './components/events/EventDetailModal';
-import { initMaxBridge, getMaxUser, applyThemeAndPalette, subscribeToThemeChange } from './lib/maxBridge';
-import { fetchEvents } from './lib/api';
+import {
+  initMaxBridge,
+  getMaxUser,
+  applyThemeAndPalette,
+  subscribeToThemeChange,
+  getMaxStartParam,
+  parseEventIdFromStartParam,
+} from './lib/maxBridge';
+import { fetchEvents, fetchEventById } from './lib/api';
 import {
   loadStoredProfile,
   saveStoredProfile,
@@ -20,6 +27,7 @@ import {
   loadStoredCustomEvents,
   fetchAndApplyUserCloudData,
   subscribeToSyncStatus,
+  recordReferralJoin,
 } from './lib/storage';
 import { DEFAULT_CITY, CITIES, type City } from './data/cities';
 import { detectUserLocation } from './lib/geolocation';
@@ -38,6 +46,9 @@ export default function App() {
 
   // Навигационные ссылки между экранами
   const [chatEventId, setChatEventId] = useState<string | null>(null);
+
+  // Баннер подтверждения добавления в мероприятие по реферальной ссылке
+  const [referralBanner, setReferralBanner] = useState<{ title: string; eventId: string } | null>(null);
 
   // Инициализация темы и палитры
   useEffect(() => {
@@ -109,6 +120,47 @@ export default function App() {
     };
   }, []);
 
+  // Автоматическая обработка перехода по реферальной ссылке из чат-бота MAX
+  useEffect(() => {
+    const startParam = getMaxStartParam();
+    const refEventId = parseEventIdFromStartParam(startParam);
+    if (!refEventId) return;
+
+    console.log('[Referral] Joining event from start param:', refEventId);
+
+    // 1. Автоматически добавляем пользователя в участники мероприятия ("Хочу пойти")
+    saveEventStatus(refEventId, 'wantToAttend', true);
+    setEventStatuses((prev) => ({
+      ...prev,
+      [refEventId]: { ...(prev[refEventId] || {}), wantToAttend: true },
+    }));
+
+    // 2. Учитываем присоединение к встрече в статистике рефералов
+    recordReferralJoin(refEventId);
+
+    // 3. Открываем чат мероприятия в Социалке
+    setChatEventId(refEventId);
+    setActiveTab('social');
+
+    // 4. Загружаем само мероприятие, если его еще нет в списке
+    fetchEventById(refEventId).then((eventItem) => {
+      if (eventItem) {
+        setEvents((prev) => {
+          if (prev.some((e) => e.id === eventItem.id)) return prev;
+          return [eventItem, ...prev];
+        });
+        setReferralBanner({ title: eventItem.title, eventId: refEventId });
+      }
+    });
+  }, []);
+
+  // Автоскрытие баннера через 6 секунд
+  useEffect(() => {
+    if (referralBanner) {
+      const timer = setTimeout(() => setReferralBanner(null), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [referralBanner]);
 
   // Загрузка событий города при смене города в профиле
   const currentCitySlug = profile?.citySlug || DEFAULT_CITY.slug;
@@ -214,6 +266,26 @@ export default function App() {
 
   return (
     <div className="app-container">
+      {/* Баннер успешного добавления в мероприятие по реферальной ссылке */}
+      {referralBanner && (
+        <div className="referral-join-banner">
+          <div className="referral-join-content">
+            <span className="referral-join-icon">🎉</span>
+            <div className="referral-join-text">
+              <strong>Вы добавлены в мероприятие!</strong>
+              <p className="truncate">«{referralBanner.title}» теперь в ваших встречах</p>
+            </div>
+            <button
+              className="referral-join-close"
+              onClick={() => setReferralBanner(null)}
+              aria-label="Закрыть"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Полноэкранная страница загрузки приложения в стиле онбординга (пока фоном прогружаются карта и события) */}
       {isAppLoading && (
         <AppLoadingScreen

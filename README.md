@@ -74,7 +74,9 @@ npm start
 ---
 
 ## 🔐 Токен бота и интеграция MAX
+- **Ссылка на бота**: [https://max.ru/t543_hakaton_max_bot](https://max.ru/t543_hakaton_max_bot)
 - **Bot Token**: `f9LHodD0cOKAeqhSUF83IlVf99PSQ09jy98YSkb3LjJtJNU-1BTZ13V38LWfR19tWateBVDI0NyaT9rC3C_W`
-- **Домен**: `vane.yakuhost.ru`
+- **Запуск чат-бота**: `npm run bot` (или автоматически вместе с `npm start`)
 - **MAX Bridge SDK**: подключен через CDN `https://st.max.ru/js/max-web-app.js`.
 - **Серверная валидация `initData`**: реализована в `server/maxAuth.ts` согласно HMAC-SHA256 спецификации MAX.
+- **Реферальная система встреч**: ссылки на встречи ведут на чат-бота с deep link параметром `?start=ref_..._event_...`, при переходе по которому пользователь автоматически добавляется в мероприятие в мини-приложении.

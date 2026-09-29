@@ -12,8 +12,8 @@ interface InviteFriendsModalProps {
 export const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({ event, onClose }) => {
   const [copied, setCopied] = useState(false);
 
-  // Ссылка на приложение с параметром startapp для MAX
-  const inviteUrl = `https://vane.yakuhost.ru/?startapp=event_${event.id}`;
+  // Ссылка на чат-бот MAX с реферальным переходом на мероприятие
+  const inviteUrl = `https://max.ru/t543_hakaton_max_bot?start=event_${event.id}`;
 
   const handleCopy = () => {
     triggerHaptic('selection');
