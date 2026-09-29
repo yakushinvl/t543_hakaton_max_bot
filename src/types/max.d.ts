@@ -45,6 +45,30 @@ export interface MaxHapticFeedback {
   selectionChanged: () => void;
 }
 
+export interface MaxLocationData {
+  latitude: number;
+  longitude: number;
+  altitude?: number | null;
+  course?: number | null;
+  speed?: number | null;
+  horizontal_accuracy?: number | null;
+  vertical_accuracy?: number | null;
+  course_accuracy?: number | null;
+  speed_accuracy?: number | null;
+}
+
+export interface MaxLocationManager {
+  isInited: boolean;
+  isLocationAvailable: boolean;
+  isAccessRequested: boolean;
+  isAccessGranted: boolean;
+  init: (callback?: () => void) => void | Promise<void>;
+  getLocation: (
+    callback?: (location: MaxLocationData | null) => void
+  ) => void | Promise<MaxLocationData | null>;
+  openSettings: () => void;
+}
+
 export interface MaxWebApp {
   initData: string;
   initDataUnsafe: MaxInitData;
@@ -59,6 +83,7 @@ export interface MaxWebApp {
   backgroundColor: string;
   BackButton: MaxBackButton;
   HapticFeedback: MaxHapticFeedback;
+  LocationManager?: MaxLocationManager;
 
   ready: () => void;
   expand: () => void;
@@ -68,6 +93,9 @@ export interface MaxWebApp {
   openLink: (url: string, options?: { try_instant_view?: boolean }) => void;
   openMaxLink: (url: string) => void;
   sendData: (data: string) => void;
+  postEvent?: (eventType: string, eventData?: any) => void;
+  requestLocation?: (callback?: (location: any) => void) => Promise<any> | void;
+  getLocation?: (callback?: (location: any) => void) => Promise<any> | void;
   onEvent: (eventType: string, eventHandler: (...args: any[]) => void) => void;
   offEvent: (eventType: string, eventHandler: (...args: any[]) => void) => void;
 }
@@ -77,6 +105,8 @@ declare global {
     WebApp?: MaxWebApp;
     max?: {
       webApp?: MaxWebApp;
+      requestLocation?: (callback?: (location: any) => void) => Promise<any> | void;
+      getLocation?: (callback?: (location: any) => void) => Promise<any> | void;
     };
   }
 }
