@@ -8,7 +8,11 @@ if (typeof window !== 'undefined') {
     if (
       reason &&
       (reason.error === 'UnsupportedEvent' ||
+        reason === 'UnsupportedEvent' ||
+        reason?.error?.code === 'UnsupportedEvent' ||
         reason?.type?.includes?.('HapticFeedback') ||
+        reason?.type?.includes?.('DeviceStorage') ||
+        reason?.type?.includes?.('SecureStorage') ||
         (typeof reason.message === 'string' && reason.message.includes('UnsupportedEvent')))
     ) {
       event.preventDefault();
@@ -70,9 +74,48 @@ export function getMaxPlatform(): 'ios' | 'android' | 'desktop' | 'web' {
   return 'web';
 }
 
+let isDeviceStorageAvailable: boolean | null = null;
+let isCloudStorageAvailable: boolean | null = null;
+
+export function isDeviceStorageSupported(): boolean {
+  if (isDeviceStorageAvailable !== null) {
+    return isDeviceStorageAvailable;
+  }
+  const webApp = getWebApp();
+  if (!webApp || !webApp.DeviceStorage) {
+    isDeviceStorageAvailable = false;
+    return false;
+  }
+  const platform = (webApp.platform || '').toLowerCase();
+  // DeviceStorage поддерживается только в мобильных клиентах MAX (iOS, Android).
+  // В Web- и Desktop-клиентах вызов приводит к ошибке UnsupportedEvent от родительского фрейма.
+  if (['desktop', 'web', 'macos', 'tdesktop', 'weba', 'webk'].includes(platform)) {
+    isDeviceStorageAvailable = false;
+    return false;
+  }
+  return true;
+}
+
+export function isCloudStorageSupported(): boolean {
+  if (isCloudStorageAvailable !== null) {
+    return isCloudStorageAvailable;
+  }
+  const webApp = getWebApp();
+  if (!webApp || !webApp.CloudStorage) {
+    isCloudStorageAvailable = false;
+    return false;
+  }
+  const platform = (webApp.platform || '').toLowerCase();
+  if (['desktop', 'web', 'macos', 'tdesktop', 'weba', 'webk'].includes(platform)) {
+    isCloudStorageAvailable = false;
+    return false;
+  }
+  return true;
+}
+
 export function getDeviceStorage() {
   const webApp = getWebApp();
-  return webApp?.DeviceStorage || null;
+  return isDeviceStorageSupported() ? webApp?.DeviceStorage || null : null;
 }
 
 /**
@@ -82,31 +125,52 @@ export async function saveToBridgeStorage(key: string, value: string): Promise<b
   const webApp = getWebApp();
   if (!webApp) return false;
 
-  // 1. Пробуем нативный DeviceStorage (iOS, Android в MAX)
-  if (webApp.DeviceStorage && typeof webApp.DeviceStorage.setItem === 'function') {
+  // 1. Пробуем нативный DeviceStorage (только на мобильных клиентах MAX)
+  if (isDeviceStorageSupported() && webApp.DeviceStorage && typeof webApp.DeviceStorage.setItem === 'function') {
     try {
       const res = webApp.DeviceStorage.setItem(key, value);
       if (res instanceof Promise) {
         await res;
       }
       return true;
-    } catch (err) {
-      console.warn('MAX DeviceStorage.setItem error:', err);
+    } catch (err: any) {
+      // При неподдерживаемом событии отключаем дальнейшие попытки вызова
+      isDeviceStorageAvailable = false;
+      const isUnsupported =
+        err === 'UnsupportedEvent' ||
+        err?.error === 'UnsupportedEvent' ||
+        err?.error?.code === 'UnsupportedEvent' ||
+        (typeof err?.message === 'string' && err.message.includes('UnsupportedEvent'));
+      if (!isUnsupported) {
+        console.warn('MAX DeviceStorage.setItem error:', err);
+      }
     }
   }
 
   // 2. Пробуем CloudStorage при наличии
-  if (webApp.CloudStorage && typeof webApp.CloudStorage.setItem === 'function') {
+  if (isCloudStorageSupported() && webApp.CloudStorage && typeof webApp.CloudStorage.setItem === 'function') {
     try {
       return await new Promise<boolean>((resolve) => {
         const res = webApp.CloudStorage?.setItem(key, value, (err, ok) => {
-          resolve(!err && Boolean(ok));
+          if (err) {
+            isCloudStorageAvailable = false;
+            resolve(false);
+          } else {
+            resolve(Boolean(ok));
+          }
         });
         if (res instanceof Promise) {
-          res.then(() => resolve(true)).catch(() => resolve(false));
+          res
+            .then(() => resolve(true))
+            .catch(() => {
+              isCloudStorageAvailable = false;
+              resolve(false);
+            });
         }
       });
-    } catch {}
+    } catch {
+      isCloudStorageAvailable = false;
+    }
   }
 
   return false;
@@ -119,8 +183,8 @@ export async function loadFromBridgeStorage(key: string): Promise<string | null>
   const webApp = getWebApp();
   if (!webApp) return null;
 
-  // 1. Пробуем DeviceStorage
-  if (webApp.DeviceStorage && typeof webApp.DeviceStorage.getItem === 'function') {
+  // 1. Пробуем DeviceStorage (только на мобильных клиентах MAX)
+  if (isDeviceStorageSupported() && webApp.DeviceStorage && typeof webApp.DeviceStorage.getItem === 'function') {
     try {
       const res = webApp.DeviceStorage.getItem(key);
       if (res instanceof Promise) {
@@ -129,27 +193,43 @@ export async function loadFromBridgeStorage(key: string): Promise<string | null>
       } else if (typeof res === 'string') {
         return res;
       }
-    } catch (err) {
-      console.warn('MAX DeviceStorage.getItem error:', err);
+    } catch (err: any) {
+      isDeviceStorageAvailable = false;
+      const isUnsupported =
+        err === 'UnsupportedEvent' ||
+        err?.error === 'UnsupportedEvent' ||
+        err?.error?.code === 'UnsupportedEvent' ||
+        (typeof err?.message === 'string' && err.message.includes('UnsupportedEvent'));
+      if (!isUnsupported) {
+        console.warn('MAX DeviceStorage.getItem error:', err);
+      }
     }
   }
 
   // 2. Пробуем CloudStorage
-  if (webApp.CloudStorage && typeof webApp.CloudStorage.getItem === 'function') {
+  if (isCloudStorageSupported() && webApp.CloudStorage && typeof webApp.CloudStorage.getItem === 'function') {
     try {
       return await new Promise<string | null>((resolve) => {
         const res = webApp.CloudStorage?.getItem(key, (err, val) => {
           if (!err && typeof val === 'string') {
             resolve(val);
           } else {
+            if (err) isCloudStorageAvailable = false;
             resolve(null);
           }
         });
         if (res instanceof Promise) {
-          res.then((val: any) => resolve(typeof val === 'string' ? val : null)).catch(() => resolve(null));
+          res
+            .then((val: any) => resolve(typeof val === 'string' ? val : null))
+            .catch(() => {
+              isCloudStorageAvailable = false;
+              resolve(null);
+            });
         }
       });
-    } catch {}
+    } catch {
+      isCloudStorageAvailable = false;
+    }
   }
 
   return null;
