@@ -1,5 +1,13 @@
 import { Bot, Keyboard, Context } from '@maxhub/max-bot-api';
 
+try {
+  if (typeof (process as any).loadEnvFile === 'function') {
+    (process as any).loadEnvFile();
+  }
+} catch {
+  // .env is optional
+}
+
 export const BOT_TOKEN =
   process.env.BOT_TOKEN ||
   'f9LHodD0cOKAeqhSUF83IlVf99PSQ09jy98YSkb3LjJtJNU-1BTZ13V38LWfR19tWateBVDI0NyaT9rC3C_W';

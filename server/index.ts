@@ -7,6 +7,14 @@ import { validateMaxInitData, parseMaxUserFromInitData } from './maxAuth';
 import { analyzeWithLocalSemanticEngine, analyzeWithCloudLLM, type FlugerAIRequest } from './flugerAI';
 import { startBot, handleWebhookUpdate } from './bot';
 
+try {
+  if (typeof (process as any).loadEnvFile === 'function') {
+    (process as any).loadEnvFile();
+  }
+} catch {
+  // .env is optional when variables are passed via Docker/shell
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -15,6 +23,11 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+
+// Health check endpoint for Docker and monitoring
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime(), timestamp: Date.now() });
+});
 
 // Прокси картинок с KudaGo с кэшированием и CORS для Canvas
 app.get('/kg-media/*', async (req, res) => {

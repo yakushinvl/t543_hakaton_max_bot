@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: max_mini_app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3001}:3001"
+    environment:
+      - PORT=3001
+      - BOT_TOKEN=${BOT_TOKEN:-}
+      - BOT_NAME=${BOT_NAME:-t543_hakaton_max_bot}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - app_data:/app/server/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3001/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  app_data:
+    driver: local
