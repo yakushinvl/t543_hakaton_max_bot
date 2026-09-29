@@ -1,5 +1,7 @@
 import { EventProvider, NormalizedEvent, normalizeCategory, deduplicateEvents } from './types';
 import { KudaGoProvider } from './kudagoProvider';
+import { ItEventsProvider } from './itEventsProvider';
+import { OpenCultureProvider } from './openCultureProvider';
 import { CitySpecializedProvider } from './citySpecializedProvider';
 import { db } from '../db';
 import { serverCache } from '../cache';
@@ -35,9 +37,13 @@ export class EventAggregatorService {
   private providers: EventProvider[] = [];
 
   constructor() {
-    // 1. Федеральный источник
+    // 1. Федеральный источник KudaGo (парки, фестивали, концерты)
     this.providers.push(new KudaGoProvider());
-    // 2. Городской специализированный источник (Москва, СПб, Казань)
+    // 2. Провайдер IT-Events (конференции, митапы, хакатоны, бизнес)
+    this.providers.push(new ItEventsProvider());
+    // 3. Провайдер Культура.РФ (музеи, выставки, филармонии, Пушкинская карта)
+    this.providers.push(new OpenCultureProvider());
+    // 4. Городской специализированный источник (Москва, СПб, Казань)
     this.providers.push(new CitySpecializedProvider());
   }
 
