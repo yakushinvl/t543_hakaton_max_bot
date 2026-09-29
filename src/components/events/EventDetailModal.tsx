@@ -3,7 +3,7 @@ import type { EventItem } from '../../types/event';
 import type { UserProfile } from '../../types/user';
 import { getEventCategoryConfig } from '../../config/categories.config';
 import { triggerHaptic, shareEventToMax } from '../../lib/maxBridge';
-import { Calendar, MapPin, Heart, Share2, MessageCircle, Check, X, ExternalLink } from 'lucide-react';
+import { Calendar, MapPin, Heart, Share2, MessageCircle, Check, X, ExternalLink, Trash2 } from 'lucide-react';
 import './EventsScreen.css';
 import { EmojiIcon } from '../icons/EmojiIcon';
 
@@ -16,6 +16,7 @@ interface EventDetailModalProps {
   onToggleSaved: () => void;
   onToggleWant: () => void;
   onOpenChat: (eventId: string) => void;
+  onDeleteEvent?: (eventId: string) => void;
 }
 
 export const EventDetailModal: React.FC<EventDetailModalProps> = ({
@@ -27,13 +28,28 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
   onToggleSaved,
   onToggleWant,
   onOpenChat,
+  onDeleteEvent,
 }) => {
   const categoryConfig = getEventCategoryConfig(event.category);
+  const isAuthor = Boolean(event.isCustom && (event.authorId === profile?.id || event.authorId === 'me'));
 
   const handleShare = () => {
     triggerHaptic('light');
-    shareEventToMax(event.title, window.location.href);
+    const authorTag = profile?.id || 'me';
+    // Реферальная ссылка в чат-бот MAX с добавлением в мини-приложение
+    const referralUrl = `https://max.ru/t543_hakaton_max_bot?start=ref_${authorTag}_event_${event.id}`;
+    shareEventToMax(event.title, referralUrl);
   };
+
+  const handleDelete = () => {
+    triggerHaptic('warning');
+    if (confirm(`Вы уверены, что хотите удалить мероприятие «${event.title}»?`)) {
+      triggerHaptic('success');
+      onDeleteEvent?.(event.id);
+      onClose();
+    }
+  };
+
 
   return (
     <div className="event-modal-overlay" onClick={onClose}>
@@ -139,6 +155,35 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
               <span>Чат и обсуждение участников</span>
             </button>
           </div>
+
+          {/* Кнопка удаления для автора события */}
+          {isAuthor && onDeleteEvent && (
+            <div style={{ marginTop: '14px', marginBottom: '6px' }}>
+              <button
+                type="button"
+                className="btn-modal-delete-danger"
+                onClick={handleDelete}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(230, 70, 70, 0.3)',
+                  background: 'rgba(230, 70, 70, 0.08)',
+                  color: '#e64646',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                <Trash2 size={16} />
+                <span>Удалить созданное мероприятие</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Нижний бар действий */}

@@ -29,6 +29,7 @@ interface EventsScreenProps {
   isWantToAttend: (eventId: string) => boolean;
   isAttended: (eventId: string) => boolean;
   onOpenChat: (eventId: string) => void;
+  onDeleteEvent?: (eventId: string) => void;
 }
 
 interface ToastMessage {
@@ -53,6 +54,7 @@ export const EventsScreen: React.FC<EventsScreenProps> = ({
   isWantToAttend,
   isAttended,
   onOpenChat,
+  onDeleteEvent,
 }) => {
   // Главная вкладка: 'all' (Афиша) или 'my' (Мои события)
   const [mainTab, setMainTab] = useState<'all' | 'my'>('all');
@@ -169,6 +171,11 @@ export const EventsScreen: React.FC<EventsScreenProps> = ({
     // Исключаем скрытые пользователем (свайп влево)
     if (dismissedIds.size > 0) {
       list = list.filter((e) => !dismissedIds.has(e.id));
+    }
+
+    // В Афише (общий каталог) не показываем мероприятия от пользователей
+    if (mainTab === 'all') {
+      list = list.filter((e) => !e.isCustom);
     }
 
     // Если открыта вкладка "Мои события"
@@ -637,6 +644,7 @@ export const EventsScreen: React.FC<EventsScreenProps> = ({
           onToggleSaved={() => onToggleStatus(selectedEvent.id, 'saved')}
           onToggleWant={() => onToggleStatus(selectedEvent.id, 'wantToAttend')}
           onOpenChat={onOpenChat}
+          onDeleteEvent={onDeleteEvent}
         />
       )}
     </div>

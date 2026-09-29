@@ -198,6 +198,20 @@ export function saveStoredCustomEvent(event: EventItem): EventItem[] {
   }
 }
 
+export function deleteStoredCustomEvent(eventId: string): EventItem[] {
+  try {
+    const current = loadStoredCustomEvents();
+    const updated = current.filter((e) => e.id !== eventId);
+    setScopedItem(CUSTOM_EVENTS_KEY, JSON.stringify(updated));
+    scheduleCloudSync();
+    return updated;
+  } catch (err) {
+    console.warn('Failed to delete custom event:', err);
+    return [];
+  }
+}
+
+
 export function loadStoredChatMessages(eventId: string): any[] {
   try {
     const raw = localStorage.getItem(`${EVENT_CHATS_PREFIX}${eventId}`);

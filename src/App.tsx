@@ -25,6 +25,7 @@ import {
   loadEventStatuses,
   saveEventStatus,
   loadStoredCustomEvents,
+  deleteStoredCustomEvent,
   fetchAndApplyUserCloudData,
   subscribeToSyncStatus,
   recordReferralJoin,
@@ -233,6 +234,15 @@ export default function App() {
     setEventStatuses({ ...updated });
   };
 
+  // Удаление созданного пользователем события
+  const handleEventDeleted = (eventId: string) => {
+    setEvents((prev) => prev.filter((e) => e.id !== eventId));
+    deleteStoredCustomEvent(eventId);
+    if (selectedEvent?.id === eventId) {
+      setSelectedEvent(null);
+    }
+  };
+
 
   // Статистика для экрана профиля
   const stats = useMemo(() => {
@@ -319,6 +329,7 @@ export default function App() {
           isWantToAttend={isWantToAttend}
           isAttended={isAttended}
           onOpenChat={handleOpenChat}
+          onDeleteEvent={handleEventDeleted}
         />
       )}
 
@@ -347,6 +358,7 @@ export default function App() {
           isWantToAttend={isWantToAttend}
           isAttended={isAttended}
           onToggleStatus={handleToggleStatus}
+          onDeleteEvent={handleEventDeleted}
         />
       )}
 
@@ -373,6 +385,7 @@ export default function App() {
           onToggleSaved={() => handleToggleStatus(selectedEvent.id, 'saved')}
           onToggleWant={() => handleToggleStatus(selectedEvent.id, 'wantToAttend')}
           onOpenChat={handleOpenChat}
+          onDeleteEvent={handleEventDeleted}
         />
       )}
 

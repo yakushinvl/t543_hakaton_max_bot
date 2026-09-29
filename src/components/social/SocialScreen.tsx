@@ -20,6 +20,7 @@ import {
   BookmarkCheck,
   ChevronRight,
   ExternalLink,
+  Trash2,
 } from 'lucide-react';
 import './SocialScreen.css';
 
@@ -33,6 +34,7 @@ interface SocialScreenProps {
   isWantToAttend?: (eventId: string) => boolean;
   isAttended?: (eventId: string) => boolean;
   onToggleStatus?: (eventId: string, key: 'saved' | 'wantToAttend' | 'attended') => void;
+  onDeleteEvent?: (eventId: string) => void;
 }
 
 export const SocialScreen: React.FC<SocialScreenProps> = ({
@@ -45,6 +47,7 @@ export const SocialScreen: React.FC<SocialScreenProps> = ({
   isWantToAttend = () => false,
   isAttended = () => false,
   onToggleStatus,
+  onDeleteEvent,
 }) => {
   const [activeTab, setActiveTab] = useState<'chats' | 'mine'>('chats');
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -55,8 +58,16 @@ export const SocialScreen: React.FC<SocialScreenProps> = ({
   // Модалка реферальной ссылки для встреч
   const [referralEvent, setReferralEvent] = useState<EventItem | null>(null);
 
-  // Фильтр внутри вкладки "Чаты"
   const [chatFilter, setChatFilter] = useState<'all' | 'want' | 'attended'>('all');
+
+  const handleDeleteEvent = (event: EventItem) => {
+    triggerHaptic('warning');
+    if (confirm(`Вы уверены, что хотите удалить мероприятие «${event.title}»?`)) {
+      triggerHaptic('success');
+      onDeleteEvent?.(event.id);
+    }
+  };
+
 
   // Если был передан initialChatEventId (например, при клике из карточки события в Афише)
   useEffect(() => {
@@ -336,10 +347,10 @@ export const SocialScreen: React.FC<SocialScreenProps> = ({
                           triggerHaptic('medium');
                           setReferralEvent(event);
                         }}
-                        title="Получить реферальную ссылку"
+                        title="Поделиться мероприятием"
                       >
-                        <Gift size={15} />
-                        <span>Реферальная ссылка</span>
+                        <Share2 size={15} />
+                        <span>Поделиться</span>
                       </button>
 
                       <button
@@ -351,7 +362,7 @@ export const SocialScreen: React.FC<SocialScreenProps> = ({
                         title="Открыть чат встречи"
                       >
                         <MessageCircle size={15} />
-                        <span>Чат встречи</span>
+                        <span>Чат</span>
                       </button>
 
                       <button
@@ -364,6 +375,20 @@ export const SocialScreen: React.FC<SocialScreenProps> = ({
                       >
                         <span>Детали</span>
                       </button>
+
+                      {onDeleteEvent && (
+                        <button
+                          className="btn-action-delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteEvent(event);
+                          }}
+                          title="Удалить мероприятие"
+                          aria-label="Удалить мероприятие"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      )}
                     </div>
                   </article>
                 );
