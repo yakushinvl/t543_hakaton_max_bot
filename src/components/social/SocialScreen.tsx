@@ -6,6 +6,7 @@ import { EventChatFullScreen } from './EventChatFullScreen';
 import { ReferralLinkModal } from './ReferralLinkModal';
 import { loadStoredChatMessages } from '../../lib/storage';
 import { triggerHaptic } from '../../lib/maxBridge';
+import { showAppConfirm, showAppToast } from '../ui/AppPopup';
 import {
   Plus,
   MessageCircle,
@@ -61,11 +62,18 @@ export const SocialScreen: React.FC<SocialScreenProps> = ({
   const [chatFilter, setChatFilter] = useState<'all' | 'want' | 'attended'>('all');
 
   const handleDeleteEvent = (event: EventItem) => {
-    triggerHaptic('warning');
-    if (confirm(`Вы уверены, что хотите удалить мероприятие «${event.title}»?`)) {
-      triggerHaptic('success');
-      onDeleteEvent?.(event.id);
-    }
+    showAppConfirm({
+      title: 'Удалить мероприятие?',
+      message: `Вы уверены, что хотите удалить «${event.title}»?\nЭто действие нельзя отменить.`,
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      danger: true,
+      onConfirm: () => {
+        triggerHaptic('success');
+        onDeleteEvent?.(event.id);
+        showAppToast(`Мероприятие «${event.title}» удалено`, 'success');
+      },
+    });
   };
 
 

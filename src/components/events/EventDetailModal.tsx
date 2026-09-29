@@ -3,6 +3,7 @@ import type { EventItem } from '../../types/event';
 import type { UserProfile } from '../../types/user';
 import { getEventCategoryConfig } from '../../config/categories.config';
 import { triggerHaptic, shareEventToMax } from '../../lib/maxBridge';
+import { showAppConfirm, showAppToast } from '../ui/AppPopup';
 import { Calendar, MapPin, Heart, Share2, MessageCircle, Check, X, ExternalLink, Trash2 } from 'lucide-react';
 import './EventsScreen.css';
 import { EmojiIcon } from '../icons/EmojiIcon';
@@ -42,12 +43,19 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
   };
 
   const handleDelete = () => {
-    triggerHaptic('warning');
-    if (confirm(`Вы уверены, что хотите удалить мероприятие «${event.title}»?`)) {
-      triggerHaptic('success');
-      onDeleteEvent?.(event.id);
-      onClose();
-    }
+    showAppConfirm({
+      title: 'Удалить мероприятие?',
+      message: `Вы уверены, что хотите удалить «${event.title}»?\nЭто действие нельзя отменить.`,
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      danger: true,
+      onConfirm: () => {
+        triggerHaptic('success');
+        onDeleteEvent?.(event.id);
+        showAppToast(`Мероприятие «${event.title}» удалено`, 'success');
+        onClose();
+      },
+    });
   };
 
 

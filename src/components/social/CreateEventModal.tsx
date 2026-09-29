@@ -6,6 +6,7 @@ import { getAllEventCategories } from '../../config/categories.config';
 import { CITIES } from '../../data/cities';
 import { createCustomEvent } from '../../lib/api';
 import { triggerHaptic } from '../../lib/maxBridge';
+import { showAppToast } from '../ui/AppPopup';
 import {
   X,
   Calendar,
@@ -112,7 +113,11 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !place.trim()) {
-      alert('Пожалуйста, заполните название и место встречи!');
+      showAppToast({
+        title: 'Заполните поля',
+        message: 'Пожалуйста, заполните название и место встречи!',
+        type: 'warning',
+      });
       return;
     }
 
@@ -146,10 +151,19 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
         name: profile?.name || 'Организатор',
       });
       triggerHaptic('success');
+      showAppToast({
+        title: 'Встреча создана!',
+        message: `«${created.title}» добавлена в ваши мероприятия`,
+        type: 'success',
+      });
       onCreated(created);
       onClose();
     } catch {
-      alert('Ошибка при создании встречи. Попробуйте еще раз.');
+      showAppToast({
+        title: 'Ошибка',
+        message: 'Ошибка при создании встречи. Попробуйте еще раз.',
+        type: 'error',
+      });
     } finally {
       setLoading(false);
     }

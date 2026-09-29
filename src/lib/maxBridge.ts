@@ -1,4 +1,5 @@
 import type { MaxWebApp, MaxUser } from '../types/max';
+import { showAppToast } from '../components/ui/AppPopup';
 
 
 // Подавление неперехваченных ошибок от неподдерживаемых событий в max-web-app.js
@@ -495,7 +496,7 @@ export function shareEventToMax(title: string, url: string): void {
     navigator.share({ title, text, url }).catch(() => {});
   } else if (navigator.clipboard) {
     navigator.clipboard.writeText(url);
-    alert('Ссылка на мероприятие скопирована в буфер обмена!');
+    showAppToast('Ссылка на мероприятие скопирована в буфер обмена!', 'success');
   }
 }
 

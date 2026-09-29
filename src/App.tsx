@@ -10,6 +10,7 @@ import { EventMap } from './components/map/EventMap';
 import { SocialScreen } from './components/social/SocialScreen';
 import { ProfileScreen } from './components/profile/ProfileScreen';
 import { EventDetailModal } from './components/events/EventDetailModal';
+import { AppPopupHost } from './components/ui/AppPopup';
 import {
   initMaxBridge,
   getMaxUser,
@@ -267,15 +268,21 @@ export default function App() {
   // Если онбординг ещё не пройден
   if (!profile || !profile.onboardingCompleted) {
     return (
-      <OnboardingModal
-        initialProfile={profile}
-        onComplete={handleOnboardingComplete}
-      />
+      <>
+        <OnboardingModal
+          initialProfile={profile}
+          onComplete={handleOnboardingComplete}
+        />
+        <AppPopupHost />
+      </>
     );
   }
 
   return (
     <div className="app-container">
+      {/* Глобальный хост попапов и всплывающих уведомлений интерфейса */}
+      <AppPopupHost />
+
       {/* Баннер успешного добавления в мероприятие по реферальной ссылке */}
       {referralBanner && (
         <div className="referral-join-banner">

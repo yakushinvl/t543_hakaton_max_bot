@@ -4,6 +4,7 @@ import type { EventItem } from '../../types/event';
 import type { UserProfile } from '../../types/user';
 import { fetchEventChat, postChatMessage } from '../../lib/api';
 import { triggerHaptic } from '../../lib/maxBridge';
+import { showAppToast } from '../ui/AppPopup';
 import { X, Send, MessageCircle } from 'lucide-react';
 import './SocialScreen.css';
 import { EmojiText } from '../icons/EmojiIcon';
@@ -66,7 +67,7 @@ export const EventChatModal: React.FC<EventChatModalProps> = ({
       setText('');
       triggerHaptic('success');
     } catch {
-      alert('Не удалось отправить сообщение');
+      showAppToast('Не удалось отправить сообщение. Попробуйте снова.', 'error');
     } finally {
       setSending(false);
     }
