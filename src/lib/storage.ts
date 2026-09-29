@@ -265,8 +265,7 @@ export function loadReferralStats(eventId: string): { clicks: number; joins: num
     const raw = localStorage.getItem(`${REFERRALS_PREFIX}${eventId}`);
     if (raw) return JSON.parse(raw);
   } catch {}
-  // Default mock seeds for interesting UI
-  return { clicks: 7, joins: 3 };
+  return { clicks: 0, joins: 0 };
 }
 
 export function recordReferralShare(eventId: string): { clicks: number; joins: number } {

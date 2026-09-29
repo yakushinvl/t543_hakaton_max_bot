@@ -4,7 +4,7 @@ import type { UserProfile } from '../../types/user';
 import { CreateEventModal } from './CreateEventModal';
 import { EventChatFullScreen } from './EventChatFullScreen';
 import { ReferralLinkModal } from './ReferralLinkModal';
-import { getMockDiscussionForEvent } from '../../data/chatDiscussions';
+import { loadStoredChatMessages } from '../../lib/storage';
 import { triggerHaptic } from '../../lib/maxBridge';
 import {
   Plus,
@@ -198,8 +198,8 @@ export const SocialScreen: React.FC<SocialScreenProps> = ({
                 const want = isWantToAttend(event.id);
                 const attended = isAttended(event.id);
                 const isAuthor = event.isCustom && (event.authorId === profile?.id || event.authorId === 'me');
-                const sampleMsgs = getMockDiscussionForEvent(event);
-                const lastMsg = sampleMsgs[sampleMsgs.length - 1];
+                const storedMsgs = loadStoredChatMessages(event.id);
+                const lastMsg = storedMsgs.length > 0 ? storedMsgs[storedMsgs.length - 1] : undefined;
 
                 const eventDateFormatted = new Date(event.date).toLocaleDateString('ru-RU', {
                   day: 'numeric',
@@ -226,7 +226,7 @@ export const SocialScreen: React.FC<SocialScreenProps> = ({
                       <div className="chat-row-topline">
                         <h4 className="chat-row-title truncate">{event.title}</h4>
                         <span className="chat-row-time">
-                          {lastMsg ? new Date(lastMsg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Сегодня'}
+                          {lastMsg ? new Date(lastMsg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                         </span>
                       </div>
 

@@ -94,15 +94,8 @@ export class EventAggregatorService {
     // Кастомные события всегда на первом месте
     const rawAll = [...customNormalized, ...externalEvents];
 
-    // Если внешних событий не нашлось (например, нет в KudaGo для малого города), используем качественный генератор
-    let fullList = rawAll;
-    if (fullList.length <= customNormalized.length) {
-      const fallbackList = this.generateFallbackEvents(citySlug);
-      fullList = [...customNormalized, ...fallbackList];
-    }
-
     // 3. Интеллектуальная дедупликация (не двоим мероприятия из разных источников!)
-    const deduplicated = deduplicateEvents(fullList);
+    const deduplicated = deduplicateEvents(rawAll);
 
     // Кэшируем результат на 15 минут
     serverCache.set(cacheKey, deduplicated, 15 * 60 * 1000);
@@ -124,70 +117,6 @@ export class EventAggregatorService {
       }
     }
     return closestSlug;
-  }
-
-  private generateFallbackEvents(citySlug: string): NormalizedEvent[] {
-    const center = CITY_COORDS[citySlug] || CITY_COORDS.kzn;
-    const items: NormalizedEvent[] = [];
-    const degPerKm = 1 / 111;
-
-    const templates = [
-      { cat: 'concert', title: 'Большой музыкальный вечер на крыше', price: 'от 700 ₽' },
-      { cat: 'theater', title: 'Премьерный показ спектакля в театре', price: 'от 800 ₽' },
-      { cat: 'exhibition', title: 'Выставка современного искусства и инсталляций', price: '350 ₽' },
-      { cat: 'cinema', title: 'Кинопоказ классики под открытым небом', price: 'Бесплатно' },
-      { cat: 'festival', title: 'Городской фестиваль уличной культуры', price: 'Вход свободный' },
-      { cat: 'sport', title: 'Открытая тренировка и йога в парке', price: 'Бесплатно' },
-      { cat: 'walk', title: 'Экскурсия по историческим дворикам города', price: '450 ₽' },
-      { cat: 'volunteer', title: 'Благотворительный маркет и субботник', price: 'Бесплатно' },
-      { cat: 'quest', title: 'Городской интерактивный квест для друзей', price: '500 ₽' },
-      { cat: 'party', title: 'Стендап-вечер лучших резидентов', price: 'от 600 ₽' },
-      { cat: 'kids', title: 'Семейный праздник и научные опыты для детей', price: 'Бесплатно' },
-      { cat: 'food', title: 'Гастрономический фестиваль уличной кухни', price: 'Вход свободный' },
-      { cat: 'education', title: 'Митап по IT технологиям и стартапам', price: 'Бесплатно / Регистрация' },
-    ];
-
-    const SAMPLE_IMAGES = [
-      'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&auto=format&fit=crop&q=80',
-    ];
-
-    templates.forEach((entry, idx) => {
-      const angle = (idx * 2 * Math.PI) / templates.length;
-      const distanceKm = 0.6 + (idx % 4) * 0.9;
-      const lon = center.lon + (Math.cos(angle) * distanceKm * degPerKm) / Math.cos((center.lat * Math.PI) / 180);
-      const lat = center.lat + Math.sin(angle) * distanceKm * degPerKm;
-
-      items.push({
-        id: `city-hub-${citySlug}-${idx}`,
-        source: 'city_hub',
-        sourceName: `Афиша ${center.name}`,
-        title: `${entry.title} (${center.name})`,
-        place: `${center.name}, Креативный кластер #${(idx % 4) + 1}`,
-        address: `Центральная ул., д. ${(idx * 7) % 40 + 1}`,
-        description: `Приглашаем жителей и гостей города на событие "${entry.title}". Вас ждут яркие впечатления, интересные спикеры и приятная атмосфера.`,
-        image: SAMPLE_IMAGES[idx % SAMPLE_IMAGES.length],
-        date: new Date(Date.now() + (idx * 14 + 6) * 3600 * 1000).toISOString(),
-        category: entry.cat,
-        ageRestricted: entry.cat === 'party',
-        minAge: entry.cat === 'kids' ? 6 : entry.cat === 'party' ? 18 : 12,
-        citySlug,
-        lon,
-        lat,
-        price: entry.price,
-        externalUrl: `https://events.max.app/${citySlug}/${idx}`,
-        isCustom: false,
-        requiresRegistration: true,
-        registeredCount: 8 + (idx * 5) % 30,
-        tags: [`Афиша ${center.name}`],
-      });
-    });
-
-    return items;
   }
 }
 

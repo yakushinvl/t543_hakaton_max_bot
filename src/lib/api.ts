@@ -2,8 +2,6 @@ import type { EventItem } from '../types/event';
 import type { ChatMessage, CreateEventPayload } from '../types/social';
 import type { RegistrationData } from '../types/user';
 import { getCachedEvents, setCachedEvents, loadStoredChatMessages, saveStoredChatMessage, saveStoredCustomEvent } from './storage';
-import { mockEventsForCity } from '../data/events';
-import { CITIES } from '../data/cities';
 
 const API_BASE = '/api';
 
@@ -60,7 +58,7 @@ export async function fetchEvents(optionsOrCitySlug?: string | FetchEventsOption
       }
     }
   } catch (err) {
-    console.warn('Custom API fetch failed, falling back to cache or mock:', err);
+    console.warn('Custom API fetch failed, falling back to cache:', err);
   }
 
   // Если запрос не прошел, но есть кэш
@@ -68,11 +66,7 @@ export async function fetchEvents(optionsOrCitySlug?: string | FetchEventsOption
     return cached.items;
   }
 
-  // Если сервер недоступен — используем расширенные моки для города
-  const city = CITIES.find((c) => c.slug === citySlug) || CITIES[0];
-  const mocks = mockEventsForCity(city, 24);
-  setCachedEvents(citySlug, mocks);
-  return mocks;
+  return [];
 }
 
 export async function createCustomEvent(payload: CreateEventPayload, author: { id: string | number; name: string }): Promise<EventItem> {

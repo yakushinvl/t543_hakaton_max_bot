@@ -3,7 +3,6 @@ import type { ChatMessage } from '../../types/social';
 import type { EventItem } from '../../types/event';
 import type { UserProfile } from '../../types/user';
 import { fetchEventChat, postChatMessage } from '../../lib/api';
-import { getMockDiscussionForEvent } from '../../data/chatDiscussions';
 import { triggerHaptic } from '../../lib/maxBridge';
 import { ArrowLeft, Send, Calendar, MapPin, Info, Users, Sparkles } from 'lucide-react';
 import './SocialScreen.css';
@@ -33,13 +32,7 @@ export const EventChatFullScreen: React.FC<EventChatFullScreenProps> = ({
 
     fetchEventChat(event.id).then((serverMsgs) => {
       if (!isMounted) return;
-      if (serverMsgs && serverMsgs.length > 0) {
-        setMessages(serverMsgs);
-      } else {
-        // Generate realistic conversation from attendees discussing this event
-        const seedMessages = getMockDiscussionForEvent(event);
-        setMessages(seedMessages);
-      }
+      setMessages(serverMsgs || []);
     });
 
     return () => {
