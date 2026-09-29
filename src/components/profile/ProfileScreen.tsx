@@ -5,7 +5,8 @@ import { getInterestById } from '../../data/interests';
 import { CITIES } from '../../data/cities';
 import { EditProfileModal } from './EditProfileModal';
 import { AppSettingsModal } from './AppSettingsModal';
-import { triggerHaptic, getMaxPlatform, getMaxUser } from '../../lib/maxBridge';
+import { triggerHaptic } from '../../lib/maxBridge';
+
 
 import {
   Pencil,
@@ -123,14 +124,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
               {genderOpt && <EmojiIcon e={genderOpt.icon} />} {genderOpt?.label}
             </span>
           </div>
-
-          <div className="air-max-account-chip" title="Данные профиля и событий сохранены относительно аккаунта MAX">
-            <span className="air-max-account-dot" />
-            <span>Аккаунт MAX{getMaxUser()?.username ? ` (@${getMaxUser()?.username})` : ''}</span>
-            <span className="air-max-platform-tag">{getMaxPlatform().toUpperCase()}</span>
-          </div>
         </div>
       </section>
+
 
       {/* 3. Воздушная статистика в один ряд (Air Stats Strip) */}
       <section className="air-stats-strip">
