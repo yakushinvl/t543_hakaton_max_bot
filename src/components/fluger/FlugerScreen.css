@@ -3,8 +3,12 @@
    ======================================================== */
 
 .fluger-container {
-  min-height: calc(100vh - 60px - var(--safe-bottom, 0px));
-  padding: calc(16px + var(--safe-top)) 24px calc(24px + var(--safe-bottom));
+  min-height: 100vh;
+  min-height: 100dvh;
+  /* Нижний отступ = высота таббара: флюгер вырастает ровно из его верхней границы.
+     Именно padding, а не margin — margin последнего блока не учитывается в прокрутке,
+     и в длинном списке результатов низ флюгера уезжал под таббар */
+  padding: calc(16px + var(--safe-top)) 24px calc(60px + var(--safe-bottom, 0px));
   max-width: 440px;
   margin: 0 auto;
   display: flex;
@@ -97,6 +101,19 @@
   align-items: center;
   justify-content: flex-end;
   padding-bottom: 4px;
+}
+
+/* Флюгер, растущий из нижней границы экрана */
+.stage-bottom-visual.fluger-ground {
+  padding-bottom: 0;
+  flex-shrink: 0;
+}
+
+.fluger-intro-cta {
+  margin-top: 22px;
+  width: auto;
+  min-width: 170px;
+  gap: 8px;
 }
 
 /* Кнопка внизу экрана точь-в-точь как в онбординге */

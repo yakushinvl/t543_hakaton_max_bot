@@ -3,6 +3,7 @@ import { getAllInterests, type InterestConfigItem } from '../../config/interests
 import { triggerHaptic } from '../../lib/maxBridge';
 import { Check } from 'lucide-react';
 import './AppleWatchGrid.css';
+import { EmojiIcon } from '../icons/EmojiIcon';
 
 interface AppleWatchGridProps {
   selectedInterests: string[];
@@ -188,7 +189,7 @@ export const AppleWatchGrid: React.FC<AppleWatchGridProps> = ({
               aria-label={item.label}
             >
               <div className="sphere-inner">
-                <span className="sphere-emoji">{item.emoji}</span>
+                <span className="sphere-emoji"><EmojiIcon e={item.emoji} /></span>
                 <span className="sphere-label">{item.label}</span>
                 {isSelected && (
                   <div className="sphere-check">

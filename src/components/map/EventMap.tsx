@@ -5,7 +5,12 @@ import type { FeatureCollection } from 'geojson';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { EventItem } from '../../types/event';
 import { CITIES, DEFAULT_CITY, type City, getDistanceKm, getCityRadiusKm, getCityZoomThreshold } from '../../data/cities';
-import { getEventCategoryColor, getEventCategoryEmoji } from '../../config/categories.config';
+import { EVENT_CATEGORIES_CONFIG, getEventCategoryColor, getEventCategoryEmoji } from '../../config/categories.config';
+import { getEmojiImage } from '../icons/emojiIcons';
+
+// Заранее подгружаем SVG-иконки категорий, чтобы метки без фото рисовались сразу с ними
+EVENT_CATEGORIES_CONFIG.forEach((cat) => getEmojiImage(cat.emoji));
+getEmojiImage('✨');
 import { triggerHaptic } from '../../lib/maxBridge';
 import { detectUserLocation, getCachedLocation, type UserLocationResult } from '../../lib/geolocation';
 import { Calendar, X, ChevronRight, Crosshair, MapPin } from 'lucide-react';
@@ -122,10 +127,16 @@ function createEventPhotoMarker(
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, ICON_SIZE, ICON_SIZE);
 
-    ctx.font = '40px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(categoryEmoji, r, r + 1);
+    const iconImg = getEmojiImage(categoryEmoji);
+    if (iconImg && iconImg.complete && iconImg.naturalWidth > 0) {
+      const iconSize = ICON_SIZE * 0.5;
+      ctx.drawImage(iconImg, r - iconSize / 2, r - iconSize / 2, iconSize, iconSize);
+    } else {
+      ctx.font = '40px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(categoryEmoji, r, r + 1);
+    }
   }
   ctx.restore();
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Compass, Sparkles, Check, MapPin } from 'lucide-react';
 import './AppLoadingScreen.css';
+import { EmojiIcon } from '../icons/EmojiIcon';
 
 interface AppLoadingScreenProps {
   onFinished?: () => void;
@@ -100,7 +101,7 @@ export const AppLoadingScreen: React.FC<AppLoadingScreenProps> = ({
             <span className="anim-line anim-delay-1">Подготавливаем карту </span>
             <span className="anim-line anim-delay-2">и события в городе</span>
             <span className="anim-line anim-delay-3 app-loading-city-pill">
-              📍 {cityName}
+              <EmojiIcon e="📍" /> {cityName}
             </span>
           </h1>
         </div>
@@ -142,28 +143,28 @@ export const AppLoadingScreen: React.FC<AppLoadingScreenProps> = ({
               {/* Интерактивные пины мероприятий, появляющиеся по мере загрузки */}
               <div className={`loading-map-pin l-pin-1 ${progress >= 20 ? 'pin-visible' : ''}`}>
                 <div className="l-pin-badge">
-                  <span>🎸</span>
+                  <EmojiIcon e="🎸" />
                 </div>
                 <span className="l-pin-tag">Концерт</span>
               </div>
 
               <div className={`loading-map-pin l-pin-2 ${progress >= 45 ? 'pin-visible' : ''}`}>
                 <div className="l-pin-badge">
-                  <span>🎨</span>
+                  <EmojiIcon e="🎨" />
                 </div>
                 <span className="l-pin-tag">Выставка</span>
               </div>
 
               <div className={`loading-map-pin l-pin-3 ${progress >= 70 ? 'pin-visible' : ''}`}>
                 <div className="l-pin-badge">
-                  <span>🍕</span>
+                  <EmojiIcon e="🍕" />
                 </div>
                 <span className="l-pin-tag">Фестиваль</span>
               </div>
 
               <div className={`loading-map-pin l-pin-4 ${progress >= 85 ? 'pin-visible' : ''}`}>
                 <div className="l-pin-badge">
-                  <span>🎭</span>
+                  <EmojiIcon e="🎭" />
                 </div>
                 <span className="l-pin-tag">Театр</span>
               </div>

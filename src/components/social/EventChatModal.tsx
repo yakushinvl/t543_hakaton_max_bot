@@ -6,6 +6,7 @@ import { fetchEventChat, postChatMessage } from '../../lib/api';
 import { triggerHaptic } from '../../lib/maxBridge';
 import { X, Send, MessageCircle } from 'lucide-react';
 import './SocialScreen.css';
+import { EmojiText } from '../icons/EmojiIcon';
 
 interface EventChatModalProps {
   event: EventItem;
@@ -95,7 +96,7 @@ export const EventChatModal: React.FC<EventChatModalProps> = ({
               <div key={msg.id} className={`chat-message-row ${isMe ? 'msg-me' : 'msg-other'}`}>
                 <div className="chat-bubble">
                   {!isMe && <span className="bubble-author">{msg.userName}</span>}
-                  <p className="bubble-text">{msg.text}</p>
+                  <p className="bubble-text"><EmojiText text={msg.text} /></p>
                   <span className="bubble-time">
                     {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>

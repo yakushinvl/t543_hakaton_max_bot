@@ -4,8 +4,9 @@ import type { UserProfile } from '../../types/user';
 import { getEventCategoryConfig } from '../../config/categories.config';
 import { triggerHaptic, shareEventToMax } from '../../lib/maxBridge';
 import { registerForEventApi } from '../../lib/api';
-import { Calendar, MapPin, Heart, Share2, MessageCircle, CheckCircle, X, Sparkles, UserCheck, ExternalLink } from 'lucide-react';
+import { Calendar, MapPin, Heart, Share2, MessageCircle, CheckCircle, Check, X, Sparkles, UserCheck, ExternalLink } from 'lucide-react';
 import './EventsScreen.css';
+import { EmojiIcon } from '../icons/EmojiIcon';
 
 interface EventDetailModalProps {
   event: EventItem;
@@ -75,7 +76,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
           <div className="event-modal-badges">
             {categoryConfig && (
               <span className="badge-interest" style={{ backgroundColor: categoryConfig.color }}>
-                {categoryConfig.emoji} {categoryConfig.label}
+                <EmojiIcon e={categoryConfig.emoji} /> {categoryConfig.label}
               </span>
             )}
             {event.sourceName && (
@@ -217,7 +218,13 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
               onToggleWant();
             }}
           >
-            {isWantToAttend ? 'Вы идёте! ✓' : 'Хочу пойти'}
+            {isWantToAttend ? (
+              <>
+                Вы идёте! <Check size={16} strokeWidth={3} />
+              </>
+            ) : (
+              'Хочу пойти'
+            )}
           </button>
 
           <button className="modal-btn-share" onClick={handleShare} title="Поделиться">

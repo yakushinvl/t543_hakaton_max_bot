@@ -18,6 +18,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import './EventsScreen.css';
+import { EmojiIcon } from '../icons/EmojiIcon';
 
 interface EventsScreenProps {
   events: EventItem[];
@@ -442,7 +443,7 @@ export const EventsScreen: React.FC<EventsScreenProps> = ({
                 onClick={() => setSearchQuery('')}
                 aria-label="Очистить поиск"
               >
-                ✕
+                <X size={14} strokeWidth={2.6} />
               </button>
             )}
           </div>
@@ -477,7 +478,7 @@ export const EventsScreen: React.FC<EventsScreenProps> = ({
                   handleSelectQuickDate('all');
                 }}
               >
-                <span>📅 {dateChipLabel}</span>
+                <span><EmojiIcon e="📅" /> {dateChipLabel}</span>
                 <X size={12} className="chip-remove" />
               </button>
             )}
@@ -493,7 +494,7 @@ export const EventsScreen: React.FC<EventsScreenProps> = ({
                 }}
               >
                 <span>
-                  🏷️ {isFreeOnly ? 'Бесплатно' : `${priceRange[0]}–${priceRange[1]} ₽`}
+                  <EmojiIcon e="🏷️" /> {isFreeOnly ? 'Бесплатно' : `${priceRange[0]}–${priceRange[1]} ₽`}
                 </span>
                 <X size={12} className="chip-remove" />
               </button>
@@ -509,7 +510,7 @@ export const EventsScreen: React.FC<EventsScreenProps> = ({
                 }}
               >
                 <span>
-                  {selectedCategoryConfig.emoji} {selectedCategoryConfig.label}
+                  <EmojiIcon e={selectedCategoryConfig.emoji} /> {selectedCategoryConfig.label}
                 </span>
                 <X size={12} className="chip-remove" />
               </button>
@@ -531,9 +532,9 @@ export const EventsScreen: React.FC<EventsScreenProps> = ({
         {/* Подсказка о жестах на картинке */}
         {mainTab === 'all' && displayEvents.length > 0 && (
           <div className="gestures-hint-bar">
-            <span>❤️ Свайп фото вправо — сохранить</span>
+            <span><EmojiIcon e="❤️" /> Свайп фото вправо — сохранить</span>
             <span className="hint-sep">•</span>
-            <span>👁️ Свайп фото влево — неинтересно</span>
+            <span><EmojiIcon e="👁️" /> Свайп фото влево — неинтересно</span>
           </div>
         )}
       </header>

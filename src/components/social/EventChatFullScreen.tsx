@@ -7,6 +7,7 @@ import { getMockDiscussionForEvent } from '../../data/chatDiscussions';
 import { triggerHaptic } from '../../lib/maxBridge';
 import { ArrowLeft, Send, Calendar, MapPin, Info, Users, Sparkles } from 'lucide-react';
 import './SocialScreen.css';
+import { EmojiText } from '../icons/EmojiIcon';
 
 interface EventChatFullScreenProps {
   event: EventItem;
@@ -205,7 +206,7 @@ export const EventChatFullScreen: React.FC<EventChatFullScreenProps> = ({
 
               <div className={`chat-bubble ${isMe ? 'bubble-me' : 'bubble-other'}`}>
                 {!isMe && <span className="bubble-author-name">{msg.userName}</span>}
-                <div className="bubble-message-text">{msg.text}</div>
+                <div className="bubble-message-text"><EmojiText text={msg.text} /></div>
                 <div className="bubble-meta">
                   <span className="bubble-timestamp">{time}</span>
                 </div>
