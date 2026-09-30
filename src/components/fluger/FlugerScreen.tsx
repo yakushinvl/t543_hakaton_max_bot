@@ -56,7 +56,7 @@ export const FlugerScreen: React.FC<FlugerScreenProps> = ({
   // Вопросы, динамически генерируемые по базе событий города и интересам пользователя
   const questions = useMemo(() => {
     return generateFlugerQuestions(events, profile, answers, currentCity);
-  }, [events, profile, answers.mood, currentCity]);
+  }, [events, profile, answers.mood, answers.cityCategory, answers.company, currentCity]);
 
   const activeQuestion = questions[currentStep] || questions[0];
 

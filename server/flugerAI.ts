@@ -1,6 +1,7 @@
 import type { EventItem } from '../src/types/event';
 import type { UserProfile } from '../src/types/user';
 import { getInterestById } from '../src/data/interests';
+import { scoreTimeAndBudget, pickDiverseTop, type TimeWindow, type Budget } from '../src/lib/flugerShared';
 
 export interface FlugerAIRequest {
   city?: string;
@@ -9,6 +10,8 @@ export interface FlugerAIRequest {
     mood?: string;
     cityCategory?: string;
     company?: string;
+    timeWindow?: TimeWindow;
+    budget?: Budget;
     format?: string;
     customText?: string;
   };
@@ -243,6 +246,11 @@ export function analyzeWithLocalSemanticEngine(
       score += 10;
     }
 
+    // 8. Ответ на адаптивный 4-й вопрос — когда и за сколько
+    const tb = scoreTimeAndBudget(event, answers);
+    score += tb.bonus;
+    if (tb.reason) reasons.unshift(tb.reason);
+
     const matchPercent = Math.min(Math.max(Math.round(score), 55), 99);
     scored.push({
       event,
@@ -254,7 +262,7 @@ export function analyzeWithLocalSemanticEngine(
 
   scored.sort((a, b) => b.score - a.score);
 
-  const topScored = scored.slice(0, 5);
+  const topScored = pickDiverseTop(scored, 5);
   const bestEvent = topScored[0]?.event;
   const bestCategory = bestEvent?.category || cityCategory || 'concert';
   const { angle, label } = calculateCompassAngle(bestCategory, city);
@@ -278,6 +286,15 @@ export function analyzeWithLocalSemanticEngine(
   } else {
     summaryTitle = `Точное попадание: ${targetLabel}`;
     verdict = `${userName}, маршрут сформирован на основе твоих интересов и актуальной афиши города.`;
+  }
+
+  if (answers.timeWindow === 'today') {
+    verdict += ' Всё — на сегодня-завтра, чтобы не откладывать.';
+  } else if (answers.timeWindow === 'weekend') {
+    verdict += ' Собрали то, что попадает точно на выходные.';
+  }
+  if (answers.budget === 'free') {
+    verdict += ' И всё это бесплатно.';
   }
 
   const recommendations: FlugerAIRecommendation[] = topScored.map((item) => ({
@@ -308,14 +325,24 @@ export async function analyzeWithCloudLLM(
   cityName: string = 'городе'
 ): Promise<FlugerAIResponse | null> {
   try {
-    const compactEvents = events.slice(0, 15).map((e) => ({
+    const compactEvents = events.slice(0, 25).map((e) => ({
       id: e.id,
       title: e.title,
       category: e.category,
       date: e.date,
       place: e.place,
+      price: e.price || 'не указана',
+      ageRestricted: e.ageRestricted,
       description: e.description?.slice(0, 120),
     }));
+
+    const timeWindowText =
+      answers.timeWindow === 'today'
+        ? 'сегодня или завтра'
+        : answers.timeWindow === 'weekend'
+          ? 'на ближайших выходных'
+          : 'не важно, любая дата';
+    const budgetText = answers.budget === 'free' ? 'только бесплатные' : 'не важно, можно платные';
 
     const prompt = `
 Ты — ИИ "Флюгер", персональный интеллектуальный гид по досугу в городе ${cityName}.
@@ -324,21 +351,29 @@ export async function analyzeWithCloudLLM(
 - Возраст: ${profile?.ageGroup || 'не указан'}
 - Интересы: ${(profile?.interests || []).join(', ') || 'разносторонние'}
 
-Ответы:
+Ответы пользователя на живой опрос:
 - Настроение: ${answers.mood || 'не уточнено'}
 - Выбранное направление в городе: ${answers.cityCategory || 'любое'}
 - Компания: ${answers.company || 'не уточнено'}
+- Когда пойти: ${timeWindowText}
+- Бюджет: ${budgetText}
 
-Афиша города:
+Афиша города (используй только события из этого списка, не придумывай новые):
 ${JSON.stringify(compactEvents)}
+
+Правила:
+- Выбери от 3 до 5 событий, которые лучше всего подходят под ответы пользователя.
+- Если пользователь просил только бесплатные события или события на определённую дату — строго следуй этому, если подходящих событий в списке достаточно.
+- Не предлагай событие с ageRestricted: true, если пользователь несовершеннолетний или выбрал компанию "family".
+- Старайся не предлагать несколько событий на одной и той же площадке подряд.
 
 Верни строго JSON объект:
 {
   "summaryTitle": "Короткий заголовок маршрута (до 5 слов)",
-  "verdict": "2 коротких живых предложения с обоснованием выбора",
+  "verdict": "2 коротких живых предложения с обоснованием выбора, упомяни дату/бюджет если они уточнялись",
   "directionLabel": "Сторона света и ориентир (например: 'Юго-Восток: Арт и джаз')",
   "compassAngle": 135,
-  "topEventIds": ["id1", "id2"],
+  "topEventIds": ["id1", "id2", "id3"],
   "reasons": { "id1": "почему подходит", "id2": "почему подходит" }
 }
 `;
@@ -355,7 +390,7 @@ ${JSON.stringify(compactEvents)}
         response_format: { type: 'json_object' },
         temperature: 0.7,
       }),
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(12000),
     });
 
     if (!response.ok) return null;
@@ -366,7 +401,7 @@ ${JSON.stringify(compactEvents)}
     if (!parsed.topEventIds || !Array.isArray(parsed.topEventIds)) return null;
 
     const recommendations: FlugerAIRecommendation[] = [];
-    for (let i = 0; i < parsed.topEventIds.length; i++) {
+    for (let i = 0; i < Math.min(parsed.topEventIds.length, 5); i++) {
       const id = parsed.topEventIds[i];
       const ev = events.find((e) => e.id === id);
       if (ev) {

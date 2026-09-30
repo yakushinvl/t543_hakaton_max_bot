@@ -8,6 +8,14 @@ export interface EventItem {
   images?: string[];
   date: string; // ISO date string
   endDate?: string;
+  /**
+   * false — у события нет реальной даты начала (постоянная экспозиция,
+   * ежедневная экскурсия и т.п.), и поле `date` — техническая заглушка,
+   * а не время проведения. Используется, чтобы не путать "дата неизвестна"
+   * с "событие начинается прямо сейчас" (см. src/lib/flugerShared.ts).
+   * Отсутствие поля или true — у события есть настоящая дата.
+   */
+  hasExactDate?: boolean;
   category: string;
   ageRestricted: boolean;
   minAge?: number;

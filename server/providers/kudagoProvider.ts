@@ -48,7 +48,11 @@ export class KudaGoProvider implements EventProvider {
         const MIN_TS = 946684800; // 2000-01-01
         const MAX_TS = 4102444800; // 2100-01-01
         const startSec = raw.dates?.find((d: any) => d.start && d.start > MIN_TS && d.start < MAX_TS)?.start;
-        const date = startSec ? new Date(startSec * 1000).toISOString() : new Date().toISOString();
+        const hasExactDate = Boolean(startSec);
+        // Без реальной даты (постоянная экспозиция/ежедневная экскурсия) подставляем
+        // "сейчас" только как технически валидный ISO-string для сортировки — реальный
+        // смысл этого случая несёт флаг hasExactDate: false, а не само значение даты.
+        const date = hasExactDate ? new Date(startSec * 1000).toISOString() : new Date().toISOString();
 
         const rawImage = raw.images?.[0]?.image;
         const image = rawImage
@@ -67,6 +71,7 @@ export class KudaGoProvider implements EventProvider {
           description: stripHtml(raw.description || '') || 'Приглашаем на городское мероприятие!',
           image,
           date,
+          hasExactDate,
           category,
           ageRestricted,
           minAge: raw.age_restriction ? parseInt(raw.age_restriction, 10) : 0,

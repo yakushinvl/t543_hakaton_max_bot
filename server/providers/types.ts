@@ -10,6 +10,7 @@ export interface NormalizedEvent {
   image: string;
   date: string;
   endDate?: string;
+  hasExactDate?: boolean;
   category: string;
   ageRestricted: boolean;
   minAge?: number;

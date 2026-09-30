@@ -1,11 +1,20 @@
 import type { EventItem } from '../types/event';
 import type { UserProfile } from '../types/user';
 import { getInterestById, ALL_INTERESTS } from '../data/interests';
+import {
+  decideFourthQuestionKind,
+  scoreTimeAndBudget,
+  pickDiverseTop,
+  type TimeWindow,
+  type Budget,
+} from './flugerShared';
 
 export interface FlugerAnswers {
   mood?: 'new' | 'familiar' | 'energy' | 'relax' | string;
   cityCategory?: string;
   company?: 'alone' | 'couple' | 'friends' | 'family' | string;
+  timeWindow?: TimeWindow;
+  budget?: Budget;
   format?: string;
   customText?: string;
 }
@@ -34,7 +43,7 @@ export interface FlugerQuestionOption {
 }
 
 export interface FlugerQuestion {
-  id: 'mood' | 'cityCategory' | 'company';
+  id: 'mood' | 'cityCategory' | 'company' | 'timeWindow' | 'budget';
   title: string;
   options: FlugerQuestionOption[];
 }
@@ -158,7 +167,39 @@ export function generateFlugerQuestions(
     ],
   };
 
-  return [q1, q2, q3];
+  // 4. Четвёртый вопрос — задаётся, только если по кандидатам реально есть что делить
+  // (иначе, например, спрашивать "бесплатно или нет", когда все события бесплатны, бессмысленно)
+  const candidatePool = answers.cityCategory
+    ? events.filter((e) => e.category === answers.cityCategory)
+    : targetCategoryIds.length > 0
+      ? events.filter((e) => targetCategoryIds.includes(e.category))
+      : events;
+
+  const fourthKind = decideFourthQuestionKind(candidatePool);
+  const questions: FlugerQuestion[] = [q1, q2, q3];
+
+  if (fourthKind === 'timeWindow') {
+    questions.push({
+      id: 'timeWindow',
+      title: 'Когда хочешь пойти?',
+      options: [
+        { id: 'today', label: 'Сегодня-завтра', emoji: '🔥' },
+        { id: 'weekend', label: 'На выходных', emoji: '🎉' },
+        { id: 'anytime', label: 'Не важно', emoji: '🗓️' },
+      ],
+    });
+  } else if (fourthKind === 'budget') {
+    questions.push({
+      id: 'budget',
+      title: 'Какой бюджет?',
+      options: [
+        { id: 'free', label: 'Бесплатно', emoji: '🆓' },
+        { id: 'paid_ok', label: 'Не важно', emoji: '💳' },
+      ],
+    });
+  }
+
+  return questions;
 }
 
 /**
@@ -172,6 +213,16 @@ export async function queryFlugerAI(
   cityName: string = 'городе'
 ): Promise<FlugerResult> {
   try {
+    // Раньше здесь был жёсткий events.slice(0, 30) по всему городу — если у выбранной
+    // категории события шли не первыми (обычная ситуация для города с 70+ событиями),
+    // релевантные кандидаты просто не долетали до сервера и не участвовали в скоринге
+    // (например, все бесплатные экскурсии могли оказаться за пределами среза).
+    // Сначала сужаем до выбранной категории/настроения, и только потом ограничиваем размер.
+    const relevant = answers.cityCategory
+      ? events.filter((e) => e.category === answers.cityCategory)
+      : events;
+    const payloadEvents = (relevant.length >= 5 ? relevant : events).slice(0, 60);
+
     const res = await fetch('/api/ai/fluger', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -179,7 +230,7 @@ export async function queryFlugerAI(
         city: citySlug,
         profile,
         answers,
-        events: events.slice(0, 30),
+        events: payloadEvents,
       }),
     });
 
@@ -278,6 +329,11 @@ function runClientSemanticEngine(
       reasons.push('Наедине с собой');
     }
 
+    // Ответ на 4-й вопрос — когда и за сколько
+    const tb = scoreTimeAndBudget(event, answers);
+    score += tb.bonus;
+    if (tb.reason) reasons.unshift(tb.reason);
+
     const matchPercent = Math.min(Math.max(Math.round(score), 58), 99);
     scored.push({
       event,
@@ -288,7 +344,7 @@ function runClientSemanticEngine(
   }
 
   scored.sort((a, b) => b.score - a.score);
-  const top = scored.slice(0, 5);
+  const top = pickDiverseTop(scored, 5);
 
   const bestCategory = top[0]?.event.category || cityCategory || 'concert';
   const compassMap: Record<string, { angle: number; label: string }> = {
@@ -319,6 +375,15 @@ function runClientSemanticEngine(
   } else if (mood === 'relax') {
     summaryTitle = `Гармония и уют: ${catLabel}`;
     verdict = `${name}, мягкий бриз и спокойный отдых. Выбраны самые душевные локации.`;
+  }
+
+  if (answers.timeWindow === 'today') {
+    verdict += ' Всё — на сегодня-завтра, чтобы не откладывать.';
+  } else if (answers.timeWindow === 'weekend') {
+    verdict += ' Собрали то, что попадает точно на выходные.';
+  }
+  if (answers.budget === 'free') {
+    verdict += ' И всё это бесплатно.';
   }
 
   return {
