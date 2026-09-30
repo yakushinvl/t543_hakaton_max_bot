@@ -13,6 +13,7 @@ const APP_SETTINGS_KEY = 'max_event_app_settings_v1';
 const EVENT_STATUSES_KEY = 'max_event_app_statuses_v2';
 const CACHED_EVENTS_PREFIX = 'max_cached_events_v2_';
 const CUSTOM_EVENTS_KEY = 'max_custom_events_v2';
+const DELETED_CUSTOM_EVENTS_KEY = 'max_deleted_custom_events_v2';
 const EVENT_CHATS_PREFIX = 'max_event_chat_v2_';
 const REFERRALS_PREFIX = 'max_referrals_stats_v2_';
 const LAST_SYNC_KEY = 'max_last_sync_timestamp_v1';
@@ -176,10 +177,71 @@ export function setCachedEvents(citySlug: string, items: EventItem[]): void {
   }
 }
 
+export function loadDeletedCustomEventIds(): Set<string> {
+  try {
+    const raw = getScopedItem(DELETED_CUSTOM_EVENTS_KEY);
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw);
+    return new Set(Array.isArray(arr) ? arr : []);
+  } catch {
+    return new Set();
+  }
+}
+
+export function recordDeletedCustomEventId(eventId: string): void {
+  try {
+    const set = loadDeletedCustomEventIds();
+    set.add(eventId);
+    setScopedItem(DELETED_CUSTOM_EVENTS_KEY, JSON.stringify(Array.from(set)));
+  } catch (err) {
+    console.warn('Failed to record deleted custom event id:', err);
+  }
+}
+
+export function unrecordDeletedCustomEventId(eventId: string): void {
+  try {
+    const set = loadDeletedCustomEventIds();
+    if (set.has(eventId)) {
+      set.delete(eventId);
+      setScopedItem(DELETED_CUSTOM_EVENTS_KEY, JSON.stringify(Array.from(set)));
+    }
+  } catch {}
+}
+
+export function removeEventFromLocalCache(eventId: string): void {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(CACHED_EVENTS_PREFIX)) {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          try {
+            const data = JSON.parse(raw);
+            if (data && Array.isArray(data.items)) {
+              const filtered = data.items.filter((item: any) => item.id !== eventId);
+              if (filtered.length !== data.items.length) {
+                data.items = filtered;
+                localStorage.setItem(key, JSON.stringify(data));
+              }
+            }
+          } catch {}
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to clean cached events:', err);
+  }
+}
+
 export function loadStoredCustomEvents(): EventItem[] {
   try {
     const raw = getScopedItem(CUSTOM_EVENTS_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const items: EventItem[] = JSON.parse(raw);
+    const deletedIds = loadDeletedCustomEventIds();
+    if (deletedIds.size === 0) return items;
+    return items.filter((e) => !deletedIds.has(e.id));
   } catch {
     return [];
   }
@@ -187,6 +249,7 @@ export function loadStoredCustomEvents(): EventItem[] {
 
 export function saveStoredCustomEvent(event: EventItem): EventItem[] {
   try {
+    unrecordDeletedCustomEventId(event.id);
     const current = loadStoredCustomEvents();
     const updated = [event, ...current.filter((e) => e.id !== event.id)];
     setScopedItem(CUSTOM_EVENTS_KEY, JSON.stringify(updated));
@@ -200,9 +263,33 @@ export function saveStoredCustomEvent(event: EventItem): EventItem[] {
 
 export function deleteStoredCustomEvent(eventId: string): EventItem[] {
   try {
+    // 1. Фиксируем удаление в списке исключений
+    recordDeletedCustomEventId(eventId);
+
+    // 2. Очищаем из локального кэша событий городов
+    removeEventFromLocalCache(eventId);
+
+    // 3. Удаляем из кастомных событий
     const current = loadStoredCustomEvents();
     const updated = current.filter((e) => e.id !== eventId);
     setScopedItem(CUSTOM_EVENTS_KEY, JSON.stringify(updated));
+
+    // 4. Очищаем статус события (saved / wantToAttend / attended)
+    try {
+      const statuses = loadEventStatuses();
+      if (statuses[eventId]) {
+        delete statuses[eventId];
+        setScopedItem(EVENT_STATUSES_KEY, JSON.stringify(statuses));
+      }
+    } catch {}
+
+    // 5. Очищаем связанные локальные сообщения чата и рефералы
+    try {
+      localStorage.removeItem(`${EVENT_CHATS_PREFIX}${eventId}`);
+      localStorage.removeItem(`${REFERRALS_PREFIX}${eventId}`);
+    } catch {}
+
+    // 6. Запускаем синхронизацию с облаком
     scheduleCloudSync();
     return updated;
   } catch (err) {
@@ -321,6 +408,7 @@ export async function syncCurrentUserDataToCloud(): Promise<boolean> {
   const settings = loadAppSettings();
   const eventStatuses = loadEventStatuses();
   const customEvents = loadStoredCustomEvents();
+  const deletedEventIds = Array.from(loadDeletedCustomEventIds());
   const referralStats = loadAllReferralStats();
 
   const payload = {
@@ -328,6 +416,7 @@ export async function syncCurrentUserDataToCloud(): Promise<boolean> {
     settings,
     eventStatuses,
     customEvents,
+    deletedEventIds,
     referralStats,
   };
 
@@ -436,6 +525,15 @@ export async function fetchAndApplyUserCloudData(): Promise<{
 function applyCloudDataToLocal(cloudData: any): void {
   if (!cloudData) return;
 
+  // 0. Удаленные мероприятия (синхронизируем tombstones с сервера)
+  if (Array.isArray(cloudData.deletedEventIds)) {
+    cloudData.deletedEventIds.forEach((id: string) => {
+      recordDeletedCustomEventId(id);
+      removeEventFromLocalCache(id);
+    });
+  }
+  const deletedIds = loadDeletedCustomEventIds();
+
   // 1. Профиль
   if (cloudData.profile) {
     setScopedItem(PROFILE_KEY, JSON.stringify(cloudData.profile), true);
@@ -446,26 +544,35 @@ function applyCloudDataToLocal(cloudData: any): void {
     setScopedItem(APP_SETTINGS_KEY, JSON.stringify(cloudData.settings), true);
   }
 
-  // 5. Статусы мероприятий (мерджим с локальными, чтобы ничего не затереть)
+  // 5. Статусы мероприятий (мерджим с локальными, исключая удаленные события)
   if (cloudData.eventStatuses) {
     const local = loadEventStatuses();
     const merged = { ...local, ...cloudData.eventStatuses };
+    for (const dId of deletedIds) {
+      delete merged[dId];
+    }
     setScopedItem(EVENT_STATUSES_KEY, JSON.stringify(merged), true);
   }
 
-  // 6. Кастомные события
-  if (Array.isArray(cloudData.customEvents) && cloudData.customEvents.length > 0) {
+  // 6. Кастомные события (исключая все удаленные)
+  if (Array.isArray(cloudData.customEvents)) {
     const local = loadStoredCustomEvents();
     const map = new Map<string, EventItem>();
-    local.forEach((e) => map.set(e.id, e));
-    cloudData.customEvents.forEach((e: EventItem) => map.set(e.id, e));
+    local.forEach((e) => {
+      if (!deletedIds.has(e.id)) map.set(e.id, e);
+    });
+    cloudData.customEvents.forEach((e: EventItem) => {
+      if (!deletedIds.has(e.id)) map.set(e.id, e);
+    });
     setScopedItem(CUSTOM_EVENTS_KEY, JSON.stringify(Array.from(map.values())), true);
   }
 
   // 7. Рефералы
   if (cloudData.referralStats && typeof cloudData.referralStats === 'object') {
     for (const [eventId, stats] of Object.entries(cloudData.referralStats)) {
-      setScopedItem(`${REFERRALS_PREFIX}${eventId}`, JSON.stringify(stats), true);
+      if (!deletedIds.has(eventId)) {
+        setScopedItem(`${REFERRALS_PREFIX}${eventId}`, JSON.stringify(stats), true);
+      }
     }
   }
 }

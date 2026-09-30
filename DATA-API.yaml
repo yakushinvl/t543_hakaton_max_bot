@@ -1,0 +1,81 @@
+# DATA-API: Спецификация данных сервиса «Флюгер»
+version: "1.0"
+service: "t543_hakaton_max_bot"
+
+# 1. Источники данных
+sources:
+  - id: "kudago"
+    name: "KudaGo API"
+    type: "REST API (JSON)"
+    scope: "Городские фестивали, концерты, выставки"
+    cache_ttl: "45 минут"
+
+  - id: "open_culture"
+    name: "Культура.РФ"
+    type: "Open Data"
+    scope: "Музеи, театры, классическое искусство"
+
+  - id: "community"
+    name: "Встречи пользователей MAX"
+    type: "Внутренняя база (db.json)"
+    scope: "Пользовательские встречи с инвайтами startapp"
+
+# 2. Модели сущностей
+entities:
+  Event:
+    description: "Карточка мероприятия"
+    fields:
+      id: "string (уникальный идентификатор)"
+      title: "string (название)"
+      place: "string (место / площадка)"
+      category: "string (категория)"
+      date: "ISO 8601 (дата и время)"
+      price: "string (стоимость / Бесплатно)"
+      lat: "float (широта)"
+      lon: "float (долгота)"
+      citySlug: "string (код города: kzn, msk, spb и др.)"
+      isCustom: "boolean (создано ли пользователем)"
+
+  FlugerRecommendation:
+    description: "Результат работы ИИ-компаса"
+    fields:
+      summaryTitle: "string (краткий заголовок маршрута)"
+      verdict: "string (текстовое обоснование подбора)"
+      directionLabel: "string (сторона света и ориентир)"
+      compassAngle: "int (угол поворота компаса: 0-360)"
+      recommendations: "array (топ подходящих событий с % совпадения)"
+
+  ChatMessage:
+    description: "Сообщение в чате мероприятия"
+    fields:
+      id: "string (id сообщения)"
+      eventId: "string (id мероприятия)"
+      userId: "string (id пользователя в MAX)"
+      userName: "string (имя автора)"
+      text: "string (текст)"
+      createdAt: "ISO 8601"
+
+# 3. Справочники
+dictionaries:
+  cities:
+    - { slug: "kzn", name: "Казань" }
+    - { slug: "msk", name: "Москва" }
+    - { slug: "spb", name: "Санкт-Петербург" }
+    - { slug: "sochi", name: "Сочи" }
+    - { slug: "ekb", name: "Екатеринбург" }
+    - { slug: "nnv", name: "Нижний Новгород" }
+
+  categories:
+    - { id: "concert", label: "Концерты" }
+    - { id: "music_jazz", label: "Джаз" }
+    - { id: "theater", label: "Театр" }
+    - { id: "exhibition", label: "Выставки" }
+    - { id: "festival", label: "Фестивали" }
+    - { id: "standup", label: "Стендап" }
+    - { id: "food", label: "Еда" }
+
+# 4. Хранилище и обработка
+storage:
+  cache: "In-Memory LRU Cache (45 мин)"
+  database: "server/data/db.json (Docker Volume app_data)"
+  deduplication: "Объединение дубликатов по расстоянию (<45м) и названию"

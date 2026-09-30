@@ -19,7 +19,7 @@ import {
   getMaxStartParam,
   parseEventIdFromStartParam,
 } from './lib/maxBridge';
-import { fetchEvents, fetchEventById } from './lib/api';
+import { fetchEvents, fetchEventById, deleteCustomEventApi } from './lib/api';
 import {
   loadStoredProfile,
   saveStoredProfile,
@@ -27,6 +27,7 @@ import {
   saveEventStatus,
   loadStoredCustomEvents,
   deleteStoredCustomEvent,
+  loadDeletedCustomEventIds,
   fetchAndApplyUserCloudData,
   subscribeToSyncStatus,
   recordReferralJoin,
@@ -74,7 +75,12 @@ export default function App() {
         setProfile(res.data.profile);
       }
       if (res.data?.eventStatuses) {
-        setEventStatuses(res.data.eventStatuses);
+        const deletedIds = loadDeletedCustomEventIds();
+        const cleanStatuses = { ...res.data.eventStatuses };
+        for (const dId of deletedIds) {
+          delete cleanStatuses[dId];
+        }
+        setEventStatuses(cleanStatuses);
       }
     });
 
@@ -84,7 +90,12 @@ export default function App() {
         setProfile((prev) => ({ ...(prev || {}), ...cloudData.profile }));
       }
       if (cloudData?.eventStatuses) {
-        setEventStatuses((prev) => ({ ...(prev || {}), ...cloudData.eventStatuses }));
+        const deletedIds = loadDeletedCustomEventIds();
+        const cleanStatuses = { ...cloudData.eventStatuses };
+        for (const dId of deletedIds) {
+          delete cleanStatuses[dId];
+        }
+        setEventStatuses((prev) => ({ ...(prev || {}), ...cleanStatuses }));
       }
     });
 
@@ -174,13 +185,17 @@ export default function App() {
     try {
       const items = await fetchEvents(slug);
       const customItems = loadStoredCustomEvents();
-      const merged = [...customItems, ...items.filter((it) => !customItems.some((c) => c.id === it.id))];
+      const deletedIds = loadDeletedCustomEventIds();
+      const validItems = items.filter((it) => !deletedIds.has(it.id));
+      const validCustom = customItems.filter((it) => !deletedIds.has(it.id));
+      const merged = [...validCustom, ...validItems.filter((it) => !validCustom.some((c) => c.id === it.id))];
       setEvents(merged);
       setIsEventsLoaded(true);
     } catch (e) {
       console.error('Failed to load events:', e);
       const customItems = loadStoredCustomEvents();
-      setEvents(customItems);
+      const deletedIds = loadDeletedCustomEventIds();
+      setEvents(customItems.filter((it) => !deletedIds.has(it.id)));
       setIsEventsLoaded(true);
     }
   }, []);
@@ -238,7 +253,13 @@ export default function App() {
   // Удаление созданного пользователем события
   const handleEventDeleted = (eventId: string) => {
     setEvents((prev) => prev.filter((e) => e.id !== eventId));
+    setEventStatuses((prev) => {
+      const next = { ...prev };
+      delete next[eventId];
+      return next;
+    });
     deleteStoredCustomEvent(eventId);
+    deleteCustomEventApi(eventId, profile?.id).catch(() => {});
     if (selectedEvent?.id === eventId) {
       setSelectedEvent(null);
     }

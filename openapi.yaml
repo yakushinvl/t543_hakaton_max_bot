@@ -1,0 +1,219 @@
+openapi: 3.0.3
+info:
+  title: API «Флюгер»
+  version: 1.0.0
+  description: REST API мини-приложения и чат-бота «Флюгер» для мессенджера MAX (Команда 543).
+
+servers:
+  - url: https://vane.yakuhost.ru
+    description: Production HTTPS сервер
+  - url: http://localhost:3001
+    description: Локальный Docker
+
+paths:
+  /api/health:
+    get:
+      summary: Проверка работоспособности
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              example:
+                status: "ok"
+                uptime: 1240.5
+                timestamp: 1759220000000
+
+  /api/events:
+    get:
+      summary: Список мероприятий
+      parameters:
+        - name: city
+          in: query
+          schema:
+            type: string
+            default: kzn
+          description: Код города (kzn, msk, spb и др.)
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Категория (concert, theater, festival и др.)
+        - name: dateFilter
+          in: query
+          schema:
+            type: string
+            enum: [all, today, tomorrow, weekend]
+          description: Фильтр по дате
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Поисковый запрос
+      responses:
+        '200':
+          description: Список событий
+          content:
+            application/json:
+              example:
+                success: true
+                city: "kzn"
+                count: 1
+                items:
+                  - id: "kzn_1"
+                    title: "Джаз на набережной"
+                    place: "Озеро Кабан"
+                    category: "music_jazz"
+                    date: "2026-10-03T18:00:00Z"
+                    price: "Бесплатно"
+                    lat: 55.7812
+                    lon: 49.1194
+
+    post:
+      summary: Создание встречи пользователем
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              title: "Поход на выставку винила"
+              category: "exhibition"
+              date: "2026-10-04T16:00:00Z"
+              place: "ЦСК Смена"
+              price: "Бесплатно"
+              citySlug: "kzn"
+              authorName: "Владимир"
+      responses:
+        '201':
+          description: Мероприятие создано
+
+  /api/events/{id}:
+    get:
+      summary: Получение события по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Карточка события
+        '404':
+          description: Не найдено
+    delete:
+      summary: Удаление пользовательского события по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Мероприятие успешно удалено
+          content:
+            application/json:
+              example:
+                success: true
+                eventId: "custom-123"
+
+  /api/ai/fluger:
+    post:
+      summary: Рекомендательный скоринг ИИ «Флюгер»
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              city: "kzn"
+              answers:
+                mood: "energy"
+                company: "friends"
+                timeWindow: "weekend"
+                budget: "free"
+      responses:
+        '200':
+          description: Рекомендации и угол компаса
+          content:
+            application/json:
+              example:
+                summaryTitle: "Эпицентр энергии: Музыка"
+                verdict: "Подобрали бесплатные события для компании на выходные."
+                directionLabel: "Северо-Восток"
+                compassAngle: 45
+                recommendations:
+                  - matchPercent: 95
+                    matchReason: "Идеально для компании на выходные"
+                    event:
+                      id: "kzn_1"
+                      title: "Джаз на набережной"
+
+  /api/chat/{eventId}:
+    get:
+      summary: Сообщения чата мероприятия
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: История сообщений
+    post:
+      summary: Отправка сообщения в чат
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              userId: "3663457"
+              userName: "Владимир"
+              text: "Встречаемся у входа в 18:00!"
+      responses:
+        '201':
+          description: Сообщение отправлено
+
+  /api/auth/validate:
+    post:
+      summary: Проверка подписи MAX initData (HMAC-SHA256)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              initData: "user=%7B%22id%22%3A3663457%7D&auth_date=1759220000&hash=abc..."
+      responses:
+        '200':
+          description: Результат валидации
+          content:
+            application/json:
+              example:
+                valid: true
+                user:
+                  id: 3663457
+                  first_name: "Владимир"
+
+  /api/user/sync:
+    post:
+      summary: Синхронизация данных профиля между устройствами
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              userId: "3663457"
+              platform: "ios"
+              data:
+                eventStatuses:
+                  kzn_1: "wantToAttend"
+      responses:
+        '200':
+          description: Данные синхронизированы

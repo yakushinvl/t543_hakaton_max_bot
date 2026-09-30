@@ -253,6 +253,22 @@ app.post('/api/events', (req, res) => {
   res.status(201).json(newEvent);
 });
 
+// Удаление пользовательского мероприятия
+app.delete('/api/events/:id', (req, res) => {
+  const { id } = req.params;
+  const userId =
+    (req.headers['x-max-user-id'] as string) ||
+    (req.query.userId as string) ||
+    req.body?.userId;
+
+  if (!id) {
+    return res.status(400).json({ error: 'Event ID is required' });
+  }
+
+  const success = db.deleteCustomEvent(id, userId);
+  res.json({ success, eventId: id });
+});
+
 // Получение чата по мероприятию
 app.get('/api/chat/:eventId', (req, res) => {
   const { eventId } = req.params;

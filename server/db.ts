@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { serverCache } from './cache';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,6 +16,7 @@ export interface UserAccountData {
   settings?: any;
   eventStatuses?: Record<string, any>;
   customEvents?: any[];
+  deletedEventIds?: string[];
   referralStats?: Record<string, any>;
   updatedAt: number;
   lastPlatform?: string;
@@ -72,7 +74,41 @@ class JsonDb {
   addCustomEvent(event: any): any {
     this.data.customEvents.unshift(event);
     this.save();
+    serverCache.deletePrefix('aggregated_events_');
     return event;
+  }
+
+  deleteCustomEvent(eventId: string, userId?: string): boolean {
+    const initialLen = this.data.customEvents.length;
+    this.data.customEvents = this.data.customEvents.filter((e) => e.id !== eventId);
+    const removedFromGlobal = this.data.customEvents.length < initialLen;
+
+    // Удаляем из профилей пользователей
+    if (this.data.profiles) {
+      for (const uid of Object.keys(this.data.profiles)) {
+        const p = this.data.profiles[uid];
+        if (p) {
+          if (Array.isArray(p.customEvents)) {
+            p.customEvents = p.customEvents.filter((e: any) => e.id !== eventId);
+          }
+          if (p.eventStatuses && p.eventStatuses[eventId]) {
+            delete p.eventStatuses[eventId];
+          }
+        }
+      }
+    }
+
+    // Удаляем связанные чаты и регистрации
+    if (this.data.chats && this.data.chats[eventId]) {
+      delete this.data.chats[eventId];
+    }
+    if (this.data.registrations && this.data.registrations[eventId]) {
+      delete this.data.registrations[eventId];
+    }
+
+    this.save();
+    serverCache.deletePrefix('aggregated_events_');
+    return removedFromGlobal;
   }
 
   getChatMessages(eventId: string): any[] {
@@ -173,19 +209,67 @@ class JsonDb {
       }
     }
 
-    // Кастомные мероприятия пользователя
+    // Удаленные мероприятия (tombstones)
+    const deletedEventIdsList = Array.isArray(incoming.deletedEventIds)
+      ? incoming.deletedEventIds
+      : Array.isArray(existing.deletedEventIds)
+      ? existing.deletedEventIds
+      : [];
+    const incomingDeletedSet = new Set<string>(
+      Array.isArray(incoming.deletedEventIds) ? incoming.deletedEventIds : []
+    );
+    const allDeletedIds = new Set<string>([
+      ...(existing.deletedEventIds || []),
+      ...incomingDeletedSet,
+    ]);
+
+    if (incomingDeletedSet.size > 0) {
+      this.data.customEvents = this.data.customEvents.filter((e) => !incomingDeletedSet.has(e.id));
+      serverCache.deletePrefix('aggregated_events_');
+    }
+
+    // Очищаем статусы удаленных событий
+    for (const dId of allDeletedIds) {
+      if (mergedStatuses[dId]) {
+        delete mergedStatuses[dId];
+      }
+    }
+
+    // Кастомные мероприятия пользователя:
+    // Если клиент прислал incoming.customEvents, берем его как авторитетный источник для данного пользователя
     let mergedCustomEvents = existing.customEvents || [];
     if (Array.isArray(incoming.customEvents)) {
-      const cMap = new Map<string, any>();
-      (existing.customEvents || []).forEach((e: any) => cMap.set(e.id, e));
-      incoming.customEvents.forEach((e: any) => {
-        cMap.set(e.id, e);
-        // Также добавляем в глобальные кастомные события, если ещё нет
-        if (!this.data.customEvents.some((ce) => ce.id === e.id)) {
-          this.data.customEvents.unshift(e);
+      // Исключаем все удаленные события
+      mergedCustomEvents = incoming.customEvents.filter((e: any) => !allDeletedIds.has(e.id));
+
+      // Находим события, которые ранее были у пользователя, но отсутствуют в incoming.customEvents
+      const incomingIds = new Set(mergedCustomEvents.map((e: any) => e.id));
+      const previouslyOwned = (existing.customEvents || []).filter(
+        (e: any) => e.authorId === userId || e.authorId === 'me' || (mergedProfile && e.authorId === mergedProfile.id)
+      );
+      for (const oldEv of previouslyOwned) {
+        if (!incomingIds.has(oldEv.id)) {
+          // Пользователь удалил это событие
+          allDeletedIds.add(oldEv.id);
+          this.data.customEvents = this.data.customEvents.filter((e) => e.id !== oldEv.id);
+          serverCache.deletePrefix('aggregated_events_');
+        }
+      }
+
+      // Добавляем новые/обновленные события в глобальную базу
+      mergedCustomEvents.forEach((e: any) => {
+        if (!allDeletedIds.has(e.id)) {
+          const idx = this.data.customEvents.findIndex((ce) => ce.id === e.id);
+          if (idx >= 0) {
+            this.data.customEvents[idx] = { ...this.data.customEvents[idx], ...e };
+          } else {
+            this.data.customEvents.unshift(e);
+            serverCache.deletePrefix('aggregated_events_');
+          }
         }
       });
-      mergedCustomEvents = Array.from(cMap.values());
+    } else {
+      mergedCustomEvents = mergedCustomEvents.filter((e: any) => !allDeletedIds.has(e.id));
     }
 
     const mergedSettings = incoming.settings
@@ -205,6 +289,7 @@ class JsonDb {
       settings: mergedSettings,
       eventStatuses: mergedStatuses,
       customEvents: mergedCustomEvents,
+      deletedEventIds: Array.from(allDeletedIds),
       referralStats: mergedReferrals,
       updatedAt: Date.now(),
       lastPlatform: platform || incoming.lastPlatform || existing.lastPlatform,

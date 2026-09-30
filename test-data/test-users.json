@@ -1,0 +1,51 @@
+[
+  {
+    "userId": "3663457",
+    "name": "Владимир",
+    "ageGroup": "18-24",
+    "gender": "male",
+    "citySlug": "kzn",
+    "interests": ["concert", "music_jazz", "science", "festival"],
+    "activeProfileMode": "squad",
+    "profiles": [
+      {
+        "id": "solo",
+        "title": "Для себя",
+        "interests": ["science", "education", "outdoor"]
+      },
+      {
+        "id": "duo",
+        "title": "Свидание",
+        "interests": ["music_jazz", "wine", "theater"]
+      },
+      {
+        "id": "squad",
+        "title": "Компания друзей",
+        "interests": ["concert", "festival", "standup", "quest"]
+      }
+    ],
+    "eventStatuses": {
+      "kzn-test-01": "wantToAttend",
+      "kzn-test-02": "saved"
+    },
+    "registration152FZ": {
+      "fullName": "Иванов Владимир Николаевич",
+      "phone": "+79991234567",
+      "email": "vladimir@mail.ru",
+      "consentPersonalData": true,
+      "consentDate": "2026-09-30T10:00:00.000Z"
+    }
+  },
+  {
+    "userId": "4892011",
+    "name": "Анна",
+    "ageGroup": "25-34",
+    "gender": "female",
+    "citySlug": "msk",
+    "interests": ["theater", "exhibition", "wine", "food"],
+    "activeProfileMode": "duo",
+    "eventStatuses": {
+      "msk-test-01": "wantToAttend"
+    }
+  }
+]

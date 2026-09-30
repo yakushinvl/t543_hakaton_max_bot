@@ -27,6 +27,18 @@ class SimpleCache {
     return this.get(key) !== null;
   }
 
+  delete(key: string): boolean {
+    return this.store.delete(key);
+  }
+
+  deletePrefix(prefix: string): void {
+    for (const key of Array.from(this.store.keys())) {
+      if (key.startsWith(prefix)) {
+        this.store.delete(key);
+      }
+    }
+  }
+
   clear(): void {
     this.store.clear();
   }

@@ -7,6 +7,7 @@ import {
   saveStoredChatMessage,
   saveStoredCustomEvent,
   loadStoredCustomEvents,
+  loadDeletedCustomEventIds,
 } from './storage';
 
 const API_BASE = '/api';
@@ -28,6 +29,11 @@ export async function fetchEvents(optionsOrCitySlug?: string | FetchEventsOption
       : optionsOrCitySlug || {};
 
   const citySlug = options.citySlug || 'kzn';
+  const deletedIds = loadDeletedCustomEventIds();
+  const filterDeleted = (list: EventItem[]) => {
+    if (deletedIds.size === 0) return list;
+    return list.filter((item) => !deletedIds.has(item.id));
+  };
 
   // Формируем query params для собственного API
   const params = new URLSearchParams();
@@ -46,7 +52,7 @@ export async function fetchEvents(optionsOrCitySlug?: string | FetchEventsOption
   const isFresh = cached && now - cached.timestamp < 1000 * 60 * 15; // 15 минут
 
   if (isFresh && cached && cached.items.length > 0) {
-    return cached.items;
+    return filterDeleted(cached.items);
   }
 
   try {
@@ -57,10 +63,11 @@ export async function fetchEvents(optionsOrCitySlug?: string | FetchEventsOption
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data.items)) {
-        if (isBaseCityQuery && data.items.length > 0) {
-          setCachedEvents(citySlug, data.items);
+        const validItems = filterDeleted(data.items);
+        if (isBaseCityQuery && validItems.length > 0) {
+          setCachedEvents(citySlug, validItems);
         }
-        return data.items;
+        return validItems;
       }
     }
   } catch (err) {
@@ -69,7 +76,7 @@ export async function fetchEvents(optionsOrCitySlug?: string | FetchEventsOption
 
   // Если запрос не прошел, но есть кэш
   if (cached && cached.items.length > 0) {
-    return cached.items;
+    return filterDeleted(cached.items);
   }
 
   return [];
@@ -137,6 +144,23 @@ export async function createCustomEvent(payload: CreateEventPayload, author: { i
 
   saveStoredCustomEvent(fallbackItem);
   return fallbackItem;
+}
+
+export async function deleteCustomEventApi(eventId: string, userId?: string | number): Promise<boolean> {
+  try {
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    if (userId) {
+      headers['X-MAX-User-Id'] = String(userId);
+    }
+    const res = await fetch(`${API_BASE}/events/${encodeURIComponent(eventId)}`, {
+      method: 'DELETE',
+      headers,
+    });
+    return res.ok;
+  } catch (err) {
+    console.warn('API deleteCustomEvent error:', err);
+    return false;
+  }
 }
 
 export async function fetchEventChat(eventId: string, eventFallback?: EventItem): Promise<ChatMessage[]> {
